@@ -1,20 +1,21 @@
 
-import React, { useState } from 'react';
-import { Lock, Mail, User as UserIcon, Loader2, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Lock, Mail, User as UserIcon, Loader2, Shield, ArrowRight } from 'lucide-react';
 import { User } from '../types.ts';
 import { authService } from '../auth.ts';
 
-export const BrandLogo: React.FC<{ size?: string }> = ({ size = "text-5xl" }) => (
+export const BrandLogo: React.FC<{ size?: string, inverted?: boolean }> = ({ size = "text-5xl", inverted = false }) => (
   <div className="flex flex-col items-center select-none group">
-    <div className="flex items-center gap-3">
-      <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-500">
-        <Shield size={28} strokeWidth={2.5} />
+    <div className="flex items-center gap-4">
+      <div className="relative">
+        <div className="relative w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all duration-500 group-hover:bg-primary group-hover:text-white group-hover:shadow-primary/40">
+          <Shield size={28} strokeWidth={2.5} />
+        </div>
       </div>
-      <h1 className={`${size} brand-font tracking-tighter text-foreground`}>
+      <h1 className={`${size} brand-font-bold tracking-tighter transition-colors ${inverted ? 'text-black' : 'text-white'}`}>
         iBlind<span className="text-primary">.</span>
       </h1>
     </div>
-    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em] mt-5 opacity-40">Terminal Operacional v10.0</p>
   </div>
 );
 
@@ -29,6 +30,11 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [securityKey, setSecurityKey] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,12 +48,12 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           authService.setSession(user);
           onLogin(user);
         } else {
-          setError('Credenciais inválidas. Verifique seu PIN.');
+          setError('Dados de acesso incorretos.');
           setIsLoading(false);
         }
       } else {
         if (name.length < 3 || securityKey.length < 4) {
-          setError('Dados insuficientes para registro.');
+          setError('Preencha os dados corretamente.');
           setIsLoading(false);
           return;
         }
@@ -55,57 +61,61 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         authService.setSession(newUser);
         onLogin(newUser);
       }
-    }, 1500);
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 selection:bg-primary/30">
-      <div className="w-full max-w-[400px] space-y-14">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#000000] p-6 selection:bg-primary/30">
+      
+      <div className={`w-full max-w-[380px] transition-all duration-1000 ease-out transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
         
-        <div className="animate-in text-center">
-          <BrandLogo />
+        {/* Header Section */}
+        <div className="text-center mb-10">
+          <BrandLogo size="text-3xl" />
+          <div className="mt-8 space-y-1">
+            <h2 className="text-sm font-medium text-white/90">
+              {isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}
+            </h2>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em]">
+              {isLogin ? 'Acesse o painel iBlind' : 'Comece a gerenciar hoje'}
+            </p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 animate-slide-up">
-          {error && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
-              <p className="text-[11px] font-bold text-center text-rose-500 tracking-tight">
-                {error}
-              </p>
-            </div>
-          )}
+        {/* Auth Interface */}
+        <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {error && (
+              <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl animate-premium-in">
+                <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest text-center">
+                  {error}
+                </p>
+              </div>
+            )}
 
-          <div className="space-y-3.5">
-            {!isLogin && (
-              <div className="relative group">
-                <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground opacity-30 group-focus-within:opacity-100 transition-opacity" size={18} />
+            <div className="space-y-2">
+              {!isLogin && (
                 <input 
-                  className="w-full bg-card border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 text-foreground pl-14 pr-6 py-5 rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/30" 
-                  placeholder="Nome Completo" 
+                  className="w-full bg-[#0A0A0A] border border-white/5 focus:border-white/20 text-white px-6 py-5 rounded-2xl text-xs font-semibold outline-none transition-all placeholder:text-white/10 text-left" 
+                  placeholder="Nome completo" 
                   value={name} 
                   onChange={e => setName(e.target.value)} 
                   required={!isLogin}
                 />
-              </div>
-            )}
+              )}
 
-            <div className="relative group">
-              <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground opacity-30 group-focus-within:opacity-100 transition-opacity" size={18} />
               <input 
-                className="w-full bg-card border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 text-foreground pl-14 pr-6 py-5 rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-muted-foreground/30" 
-                placeholder="E-mail Corporativo" 
+                className="w-full bg-[#0A0A0A] border border-white/5 focus:border-white/20 text-white px-6 py-5 rounded-2xl text-xs font-semibold outline-none transition-all placeholder:text-white/10 text-left" 
+                placeholder="E-mail corporativo" 
                 type="email" 
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
                 required 
               />
-            </div>
 
-            <div className="relative group">
-              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground opacity-30 group-focus-within:opacity-100 transition-opacity" size={18} />
               <input 
-                className="w-full bg-card border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 text-foreground pl-14 pr-6 py-5 rounded-2xl text-sm font-bold tracking-[0.5em] outline-none transition-all placeholder:text-muted-foreground/30 placeholder:tracking-normal" 
-                placeholder="PIN" 
+                className="w-full bg-[#0A0A0A] border border-white/5 focus:border-white/20 text-white px-6 py-5 rounded-2xl text-xs font-black outline-none transition-all placeholder:text-white/10 text-left tracking-[0.3em]" 
+                placeholder="Senha de acesso" 
                 type="password"
                 maxLength={4}
                 value={securityKey} 
@@ -113,29 +123,39 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 required 
               />
             </div>
+
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="group w-full relative h-[64px] bg-white text-black rounded-2xl transition-all duration-500 active:scale-95 disabled:opacity-50 border border-white hover:bg-transparent hover:text-white mt-4"
+            >
+              <span className="relative z-10 brand-font-bold text-[10px] tracking-[0.3em] flex items-center justify-center gap-3 uppercase">
+                {isLoading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    {isLogin ? 'Entrar' : 'Continuar'}
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </span>
+            </button>
+          </form>
+
+          <div className="flex flex-col items-center gap-6 pt-4">
+            <button 
+              onClick={() => { setIsLogin(!isLogin); setError(''); }} 
+              className="text-[10px] font-bold text-white/20 hover:text-white transition-all tracking-wide"
+            >
+              {isLogin ? 'Ainda não tem conta?' : 'Já tenho uma conta'}
+            </button>
           </div>
-
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary text-primary-foreground py-5 rounded-2xl font-bold text-sm tracking-tight active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 shadow-lg shadow-primary/20 hover:brightness-110"
-          >
-            {isLoading ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              isLogin ? 'Entrar no Sistema' : 'Criar Conta Operacional'
-            )}
-          </button>
-        </form>
-
-        <div className="flex flex-col items-center gap-6 animate-in pt-4">
-          <button 
-            onClick={() => { setIsLogin(!isLogin); setError(''); }} 
-            className="text-[11px] font-bold text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase opacity-60"
-          >
-            {isLogin ? 'Solicitar Acesso à Gerência' : 'Já possui PIN? Fazer Login'}
-          </button>
         </div>
+
+        {/* Footer */}
+        <p className="mt-20 text-center text-[8px] font-black text-white/5 uppercase tracking-[1em] select-none">
+          iBlind 2025
+        </p>
       </div>
     </div>
   );

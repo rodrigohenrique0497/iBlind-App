@@ -1,135 +1,171 @@
 
 import React from 'react';
-import { Check, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, X, Loader2, AlertCircle, Camera, Trash2 } from 'lucide-react';
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  trend?: { value: string; isUp: boolean };
-  onClick?: () => void;
-}
-
-export const IBlindStatCard: React.FC<StatCardProps> = ({ title, value, icon, trend, onClick }) => (
+export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-card border border-border p-5 rounded-2xl flex flex-col justify-between transition-all duration-300 hover:ring-1 hover:ring-primary/20 active:scale-[0.98] ${onClick ? 'cursor-pointer' : ''}`}
+    className={`bg-card border border-white/5 p-6 rounded-[24px] shadow-none transition-all hover:border-white/10 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
   >
-    <div className="flex justify-between items-start">
-      <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
-        {icon}
-      </div>
-      {trend && (
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${trend.isUp ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'}`}>
-          {trend.value}
-        </span>
-      )}
-    </div>
-    <div className="mt-4">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em]">{title}</p>
-      <h3 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">{value}</h3>
-    </div>
+    {children}
   </div>
 );
 
-export const IBlindButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger',
-  size?: 'sm' | 'md' | 'lg',
-  isLoading?: boolean
-}> = ({ children, variant = 'primary', size = 'md', isLoading, className, ...props }) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none";
+export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-primary' }) => (
+  <IBCard className="flex items-center gap-6 p-8 relative overflow-hidden group">
+    <div className={`w-14 h-14 rounded-2xl bg-[#0A0A0A] border border-white/5 flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-white group-hover:text-black`}>
+      {icon}
+    </div>
+    <div>
+      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40">{title}</p>
+      <p className="text-3xl brand-font-bold mt-1 tracking-tighter">{value}</p>
+    </div>
+  </IBCard>
+);
+
+export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' | 'ghost', isLoading?: boolean }> = ({ 
+  children, variant = 'primary', isLoading, className = '', ...props 
+}) => {
+  const base = "px-8 py-5 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.96] flex items-center justify-center gap-3 disabled:opacity-50 select-none border";
   
   const variants = {
-    primary: "bg-primary text-primary-foreground hover:brightness-110 shadow-sm",
-    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    outline: "border border-border bg-transparent hover:bg-accent",
-    ghost: "bg-transparent hover:bg-accent",
-    danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-  };
-
-  const sizes = {
-    sm: "px-4 py-2 text-xs",
-    md: "px-6 py-3 text-sm",
-    lg: "px-8 py-4 text-base",
+    primary: "bg-white text-black border-white hover:bg-transparent hover:text-white shadow-[0_10px_30px_rgba(255,255,255,0.05)]",
+    secondary: "bg-transparent text-white border-white/10 hover:border-white hover:bg-white hover:text-black",
+    danger: "bg-red-600 text-white border-red-600 hover:bg-transparent hover:text-red-500 shadow-lg shadow-red-600/10",
+    ghost: "bg-transparent text-muted-foreground border-transparent hover:text-white hover:bg-white/5"
   };
 
   return (
-    <button {...props} className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className || ''}`}>
-      {isLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-      {children}
+    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
+      {isLoading ? <Loader2 className="animate-spin" size={16} /> : children}
     </button>
   );
 };
 
-export const IBlindInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label?: string }> = ({ label, ...props }) => (
-  <div className="space-y-1.5 w-full">
-    {label && <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{label}</label>}
+export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label?: string; error?: string }> = ({ label, error, className = '', ...props }) => (
+  <div className="space-y-2 w-full">
+    {label && <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1 opacity-40">{label}</label>}
     <input
       {...props}
-      className="w-full bg-background border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 text-foreground px-4 py-3.5 rounded-xl outline-none transition-all placeholder:text-muted-foreground/40 text-sm font-medium"
+      className={`w-full bg-[#0A0A0A] border border-white/5 focus:border-white/20 text-foreground px-6 py-5 rounded-2xl outline-none transition-all placeholder:text-white/5 text-xs font-medium text-left ${className}`}
     />
+    {error && <p className="text-[9px] font-black text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
   </div>
 );
 
-export const IBlindBadge: React.FC<{ children: React.ReactNode; variant?: 'primary' | 'success' | 'warning' | 'error' | 'neutral' }> = ({ children, variant = 'neutral' }) => {
+export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: (v: boolean) => void; notes?: string; onNotesChange?: (n: string) => void }> = ({ 
+  label, value, onChange, notes, onNotesChange 
+}) => (
+  <div className="space-y-4">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
+      <div className="flex bg-[#0A0A0A] border border-white/5 p-1 rounded-2xl w-full md:w-auto">
+        <button 
+          type="button"
+          onClick={() => onChange(false)}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-white text-black' : 'text-muted-foreground hover:text-white'}`}
+        >
+          ÍNTREGRO
+        </button>
+        <button 
+          type="button"
+          onClick={() => onChange(true)}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${value ? 'bg-red-600 text-white' : 'text-muted-foreground hover:text-red-500'}`}
+        >
+          AVARIA
+        </button>
+      </div>
+    </div>
+    {value && onNotesChange && (
+      <div className="animate-premium-in">
+        <IBInput 
+          label="Descrição da Avaria" 
+          placeholder="Especifique os danos encontrados..."
+          value={notes}
+          onChange={(e) => onNotesChange(e.target.value)}
+          className="border-red-500/20"
+        />
+      </div>
+    )}
+  </div>
+);
+
+export const IBImageUpload: React.FC<{ 
+  label: string; 
+  images: string[]; 
+  onChange: (images: string[]) => void;
+  max?: number;
+}> = ({ label, images, onChange, max = 4 }) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file: File) => {
+      if (images.length >= max) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        onChange([...images, base64String]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    onChange(images.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-40">{label}</label>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {images.map((img, i) => (
+          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-[#0A0A0A] border border-white/5">
+            <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={`Evidence ${i}`} />
+            <button 
+              type="button"
+              onClick={() => removeImage(i)}
+              className="absolute inset-0 bg-red-600/80 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Trash2 size={20} />
+            </button>
+          </div>
+        ))}
+        {images.length < max && (
+          <label className="aspect-square rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/5 hover:border-white/30 transition-all text-muted-foreground group">
+            <Camera size={24} className="group-hover:text-white transition-colors" />
+            <span className="text-[8px] font-black uppercase tracking-[0.3em]">Capturar</span>
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              className="hidden" 
+              onChange={handleFile} 
+              multiple 
+            />
+          </label>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const IBBadge: React.FC<{ children: React.ReactNode; variant?: 'success' | 'warning' | 'error' | 'neutral' | 'primary' }> = ({ children, variant = 'neutral' }) => {
   const styles = {
-    primary: 'bg-primary/10 text-primary border-primary/20',
-    success: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-    error: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
-    neutral: 'bg-secondary text-muted-foreground border-border',
+    success: 'bg-white text-black',
+    warning: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
+    error: 'bg-red-600 text-white',
+    neutral: 'bg-transparent text-muted-foreground border border-white/10',
+    primary: 'bg-primary/10 text-primary border border-primary/20',
   };
   return (
-    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${styles[variant]}`}>
+    <span className={`text-[8px] font-black uppercase tracking-[0.3em] px-3 py-1.5 rounded-lg ${styles[variant]}`}>
       {children}
     </span>
   );
 };
 
-export const IBlindOptionCard: React.FC<{ 
-  label: string, 
-  description?: string, 
-  active: boolean, 
-  onClick: () => void,
-  icon?: React.ReactNode,
-  variant?: 'default' | 'danger'
-}> = ({ label, description, active, onClick, icon, variant = 'default' }) => (
-  <button 
-    onClick={onClick}
-    className={`w-full p-4 rounded-2xl border text-left transition-all duration-300 flex items-center gap-4 group ${
-      active 
-      ? variant === 'danger' 
-        ? 'bg-destructive/10 border-destructive ring-1 ring-destructive text-foreground'
-        : 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20' 
-      : 'bg-card border-border hover:border-primary/50 text-foreground'
-    }`}
-  >
-    {icon && <div className={`${active && variant === 'default' ? 'text-primary-foreground' : 'text-primary'} transition-colors`}>{icon}</div>}
-    <div className="flex-1">
-      <p className="font-bold text-sm tracking-tight">{label}</p>
-      {description && <p className={`text-[11px] mt-0.5 ${active && variant === 'default' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{description}</p>}
-    </div>
-    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${active ? 'bg-primary-foreground border-primary-foreground' : 'border-border group-hover:border-primary/30'}`}>
-      {active && <Check size={14} className={variant === 'danger' ? 'text-destructive' : 'text-primary'} strokeWidth={4} />}
-    </div>
-  </button>
+export const IBSkeleton: React.FC<{ className?: string }> = ({ className = "h-4 w-full" }) => (
+  <div className={`skeleton ${className} opacity-5`} />
 );
-
-export const IBlindModal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in">
-      <div className="bg-card border border-border w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
-        <div className="px-6 py-5 border-b border-border flex justify-between items-center">
-          <h3 className="font-bold text-lg tracking-tight">{title}</h3>
-          <button onClick={onClose} className="p-2 hover:bg-secondary rounded-xl transition-colors text-muted-foreground">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-        <div className="p-6">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};

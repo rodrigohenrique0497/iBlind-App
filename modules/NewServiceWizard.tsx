@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Smartphone, ShieldCheck, AlertCircle, Scan, Camera, CreditCard, PenTool, CheckCircle2 } from 'lucide-react';
-import { IBlindInput, IBlindButton, IBlindBadge, IBlindOptionCard } from '../components/iBlindUI.tsx';
+import { ArrowLeft, Smartphone, ShieldCheck, Box, CreditCard, PenTool, CheckCircle, Info, Sparkles, Camera, Wallet, Plus, Zap } from 'lucide-react';
+import { IBInput, IBButton, IBBinaryCheck, IBBadge, IBCard, IBImageUpload } from '../components/iBlindUI.tsx';
 import { SignaturePad } from '../components/SignaturePad.tsx';
 import { Attendance, InventoryItem } from '../types.ts';
 
@@ -12,222 +12,271 @@ interface WizardProps {
 }
 
 const STEPS = [
-  { id: 'DEVICE', label: 'Dispositivo', icon: <Smartphone size={16}/> },
-  { id: 'CHECKLIST', label: 'Integridade', icon: <Scan size={16}/> },
-  { id: 'COVERAGE', label: 'Blindagem', icon: <ShieldCheck size={16}/> },
-  { id: 'CHECKOUT', label: 'Checkout', icon: <CreditCard size={16}/> },
-  { id: 'VALIDATE', label: 'Assinatura', icon: <PenTool size={16}/> },
+  { id: 'EQUIP', label: 'Equipamento' },
+  { id: 'CHECK', label: 'Estado Físico' },
+  { id: 'STOCK', label: 'Financeiro' },
+  { id: 'FINISH', label: 'Finalizar' },
 ];
 
 export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, onComplete, onCancel }) => {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<Partial<Attendance>>({
     state: { 
-      tela: { hasDamage: false }, 
-      traseira: { hasDamage: false }, 
-      cameras: { hasDamage: false },
-      botoes: { hasDamage: false } 
+      tela: { hasDamage: false, notes: '' }, 
+      traseira: { hasDamage: false, notes: '' }, 
+      cameras: { hasDamage: false, notes: '' }, 
+      botoes: { hasDamage: false, notes: '' } 
     },
-    coverage: 'FULL',
-    appliedCourtesyFilm: false,
-    valueBlindagem: 0,
     paymentMethod: 'PIX',
-    deviceIMEI: ''
+    valueBlindagem: 0,
+    valuePelicula: 0,
+    valueOthers: 0,
+    usedItemId: '',
+    photos: []
   });
 
   const next = () => setStep(s => Math.min(STEPS.length - 1, s + 1));
   const back = () => step === 0 ? onCancel() : setStep(s => s - 1);
 
+  const totalCalculated = useMemo(() => {
+    return (data.valueBlindagem || 0) + (data.valuePelicula || 0) + (data.valueOthers || 0);
+  }, [data.valueBlindagem, data.valuePelicula, data.valueOthers]);
+
+  const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+
+  const suggestedItems = useMemo(() => {
+    if (!data.deviceModel || data.deviceModel.length < 3) return [];
+    return inventory.filter(item => 
+        item.model.toLowerCase().includes(data.deviceModel!.toLowerCase()) ||
+        data.deviceModel!.toLowerCase().includes(item.model.toLowerCase())
+    );
+  }, [data.deviceModel, inventory]);
+
   const canAdvance = useMemo(() => {
     if (step === 0) return data.clientName && data.deviceModel && data.deviceIMEI;
-    if (step === 1) return true;
-    if (step === 3) return data.valueBlindagem && data.valueBlindagem > 0;
-    if (step === 4) return data.clientSignature;
+    if (step === 1) {
+      const s = data.state!;
+      if (s.tela.hasDamage && (!s.tela.notes || s.tela.notes.length < 3)) return false;
+      if (s.traseira.hasDamage && (!s.traseira.notes || s.traseira.notes.length < 3)) return false;
+      if (s.cameras.hasDamage && (!s.cameras.notes || s.cameras.notes.length < 3)) return false;
+      return true;
+    }
+    if (step === 2) return totalCalculated > 0;
+    if (step === 3) return !!data.clientSignature;
     return true;
-  }, [step, data]);
+  }, [step, data, totalCalculated]);
+
+  const handleNumericInput = (field: string, value: string) => {
+    const numericValue = parseFloat(value) || 0;
+    setData(prev => ({ ...prev, [field]: numericValue }));
+  };
 
   return (
-    <div className="h-full flex flex-col bg-background animate-in overflow-hidden">
-      <header className="px-6 py-5 border-b border-border flex items-center justify-between glass sticky top-0 z-50">
-        <button onClick={back} className="p-2.5 hover:bg-secondary rounded-2xl transition-all active:scale-90">
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex gap-1.5">
+    <div className="h-full flex flex-col bg-background animate-premium-in">
+      <header className="px-6 md:px-12 py-8 border-b border-border flex items-center justify-between glass shadow-sm">
+        <button onClick={back} className="p-4 hover:bg-muted rounded-[22px] transition-all active:scale-90"><ArrowLeft size={24}/></button>
+        <div className="flex gap-3">
           {STEPS.map((s, i) => (
-            <div key={s.id} className={`h-1 rounded-full transition-all duration-500 ${i <= step ? 'w-6 bg-primary' : 'w-2 bg-secondary'}`} />
+            <div key={s.id} className={`h-2 rounded-full transition-all duration-700 ${i <= step ? 'w-12 bg-primary' : 'w-3 bg-border'}`} />
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <IBlindBadge variant="primary">{step + 1}/{STEPS.length}</IBlindBadge>
+        <div className="hidden md:block">
+            <IBBadge variant="primary">PASSO {step + 1} DE {STEPS.length}</IBBadge>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-6 md:p-12">
-        <div className="max-w-2xl mx-auto space-y-12">
+      <main className="flex-1 overflow-y-auto p-6 md:p-12 no-scrollbar">
+        <div className="max-w-3xl mx-auto space-y-12">
           
           {step === 0 && (
-            <div className="space-y-10 animate-slide-up">
-              <div className="space-y-1">
-                <h1 className="text-3xl font-extrabold tracking-tighter">Dados do Cliente</h1>
-                <p className="text-muted-foreground text-sm font-medium leading-relaxed">Identifique o cliente e o dispositivo para rastreabilidade.</p>
+            <div className="space-y-12">
+              <div className="space-y-2 text-left">
+                <h1 className="text-4xl md:text-5xl brand-font-bold tracking-tight">Registro</h1>
+                <p className="text-muted-foreground text-sm font-medium">Insira as informações básicas do cliente.</p>
               </div>
               <div className="space-y-6">
-                <IBlindInput label="Nome Completo" placeholder="Ex: Rodrigo Silva" value={data.clientName} onChange={e => setData({...data, clientName: e.target.value})} />
-                <IBlindInput label="WhatsApp / Telefone" placeholder="(00) 00000-0000" type="tel" value={data.clientPhone} onChange={e => setData({...data, clientPhone: e.target.value})} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                  <IBlindInput label="Modelo do Celular" placeholder="Ex: iPhone 16 Pro" value={data.deviceModel} onChange={e => setData({...data, deviceModel: e.target.value})} />
-                  <IBlindInput label="IMEI / Serial Number" placeholder="Código identificador" value={data.deviceIMEI} onChange={e => setData({...data, deviceIMEI: e.target.value})} />
+                <IBInput label="Nome do Cliente" placeholder="Ex: João Silva" value={data.clientName} onChange={e => setData({...data, clientName: e.target.value})} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <IBInput label="Aparelho" placeholder="Ex: iPhone 16 Pro" value={data.deviceModel} onChange={e => setData({...data, deviceModel: e.target.value})} />
+                  <IBInput label="IMEI / Serial" placeholder="Identificação única" value={data.deviceIMEI} onChange={e => setData({...data, deviceIMEI: e.target.value})} />
                 </div>
               </div>
             </div>
           )}
 
           {step === 1 && (
-            <div className="space-y-10 animate-slide-up">
-              <div className="space-y-1">
-                <h1 className="text-3xl font-extrabold tracking-tighter">Checklist de Entrada</h1>
-                <p className="text-muted-foreground text-sm font-medium">O aparelho apresenta riscos ou danos prévios? Marque apenas se houver avaria.</p>
+            <div className="space-y-12">
+              <div className="space-y-2 text-left">
+                <h1 className="text-4xl md:text-5xl brand-font-bold tracking-tight">Vistoria</h1>
+                <p className="text-muted-foreground text-sm font-medium">Estado físico do dispositivo na chegada.</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <IBlindOptionCard 
-                  label="Riscos na Tela" 
-                  description="Arranhões ou trincas frontais"
-                  active={data.state!.tela.hasDamage} 
-                  variant={data.state!.tela.hasDamage ? 'danger' : 'default'}
-                  onClick={() => setData({...data, state: {...data.state!, tela: {hasDamage: !data.state!.tela.hasDamage}}})} 
+
+              <div className="space-y-8">
+                <IBBinaryCheck 
+                  label="Display" 
+                  value={data.state!.tela.hasDamage} 
+                  onChange={(v) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, hasDamage: v}}})}
+                  notes={data.state!.tela.notes}
+                  onNotesChange={(n) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, notes: n}}})}
                 />
-                <IBlindOptionCard 
-                  label="Danos na Traseira" 
-                  description="Vidro traseiro ou quinas"
-                  active={data.state!.traseira.hasDamage} 
-                  variant={data.state!.traseira.hasDamage ? 'danger' : 'default'}
-                  onClick={() => setData({...data, state: {...data.state!, traseira: {hasDamage: !data.state!.traseira.hasDamage}}})} 
+                <IBBinaryCheck 
+                  label="Traseira" 
+                  value={data.state!.traseira.hasDamage} 
+                  onChange={(v) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, hasDamage: v}}})}
+                  notes={data.state!.traseira.notes}
+                  onNotesChange={(n) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, notes: n}}})}
                 />
-                <IBlindOptionCard 
-                  label="Lentes da Câmera" 
-                  description="Riscos nas lentes circulares"
-                  active={data.state!.cameras.hasDamage} 
-                  variant={data.state!.cameras.hasDamage ? 'danger' : 'default'}
-                  onClick={() => setData({...data, state: {...data.state!, cameras: {hasDamage: !data.state!.cameras.hasDamage}}})} 
+                <IBBinaryCheck 
+                  label="Câmeras" 
+                  value={data.state!.cameras.hasDamage} 
+                  onChange={(v) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, hasDamage: v}}})}
+                  notes={data.state!.cameras.notes}
+                  onNotesChange={(n) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, notes: n}}})}
                 />
-                <IBlindOptionCard 
-                  label="Borda / Botões" 
-                  description="Descascados ou amassados"
-                  active={data.state!.botoes.hasDamage} 
-                  variant={data.state!.botoes.hasDamage ? 'danger' : 'default'}
-                  onClick={() => setData({...data, state: {...data.state!, botoes: {hasDamage: !data.state!.botoes.hasDamage}}})} 
-                />
-              </div>
-              {/* Fix: Explicitly cast 'v' to any to avoid 'Property 'hasDamage' does not exist on type 'unknown'' error */}
-              {Object.values(data.state!).some((v: any) => v.hasDamage) && (
-                <div className="p-5 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex gap-4 items-start">
-                  <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-[11px] font-bold text-amber-600 uppercase tracking-widest leading-relaxed">Atenção: Avarias detectadas serão impressas no certificado de garantia para proteção operacional.</p>
+
+                <div className="pt-10 border-t border-white/5">
+                  <IBImageUpload 
+                    label="Anexar Fotos" 
+                    images={data.photos || []} 
+                    onChange={(imgs) => setData({...data, photos: imgs})} 
+                    max={6}
+                  />
                 </div>
-              )}
+              </div>
             </div>
           )}
 
           {step === 2 && (
-            <div className="space-y-10 animate-slide-up">
-              <div className="space-y-1">
-                <h1 className="text-3xl font-extrabold tracking-tighter">Plano de Proteção</h1>
-                <p className="text-muted-foreground text-sm font-medium">Selecione o serviço executado neste atendimento.</p>
+            <div className="space-y-12">
+              <div className="space-y-2 text-left">
+                <h1 className="text-4xl md:text-5xl brand-font-bold tracking-tight">Financeiro</h1>
+                <p className="text-muted-foreground text-sm font-medium">Valores e itens utilizados.</p>
               </div>
-              <div className="space-y-4">
-                <IBlindOptionCard 
-                  label="Blindagem Titanium Full" 
-                  description="Proteção 360º: Frente, Verso e Laterais" 
-                  active={data.coverage === 'FULL'} 
-                  onClick={() => setData({...data, coverage: 'FULL'})} 
-                  icon={<ShieldCheck size={20}/>}
-                />
-                <IBlindOptionCard 
-                  label="Frente (Nanotecnológica)" 
-                  description="Blindagem líquida de alta resistência" 
-                  active={data.coverage === 'SCREEN'} 
-                  onClick={() => setData({...data, coverage: 'SCREEN'})} 
-                  icon={<Smartphone size={20}/>}
-                />
-                <IBlindOptionCard 
-                  label="Back & Cameras" 
-                  description="Traseira e lentes de alto impacto" 
-                  active={data.coverage === 'BACK'} 
-                  onClick={() => setData({...data, coverage: 'BACK'})} 
-                  icon={<Camera size={20}/>}
-                />
-              </div>
-            </div>
-          )}
 
-          {step === 3 && (
-            <div className="space-y-10 animate-slide-up">
-              <div className="space-y-1 text-center">
-                <h1 className="text-3xl font-extrabold tracking-tighter">Resumo de Pagamento</h1>
-                <p className="text-muted-foreground text-sm font-medium">Confirme os valores finais acordados.</p>
-              </div>
-              <div className="bg-card border border-border p-10 rounded-[40px] text-center space-y-3 shadow-sm ring-1 ring-border">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-[0.2em]">Investimento Total</p>
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-2xl font-bold opacity-20">R$</span>
-                  <input 
-                    type="number" 
-                    className="bg-transparent text-6xl font-extrabold text-foreground outline-none w-48 text-center tracking-tighter"
-                    placeholder="000"
-                    autoFocus
-                    onChange={e => setData({...data, valueBlindagem: Number(e.target.value)})}
-                  />
+              {suggestedItems.length > 0 && (
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] ml-1">Sugestões de Estoque</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {suggestedItems.map(item => (
+                      <IBCard 
+                        key={item.id} 
+                        onClick={() => setData({...data, usedItemId: item.id})}
+                        className={`flex flex-col gap-3 p-5 border transition-all ${data.usedItemId === item.id ? 'border-white/40 bg-white/5' : 'border-white/5'}`}
+                      >
+                        <div className="flex justify-between items-start">
+                            <span className="text-xs font-bold uppercase tracking-tight">{item.brand} {item.model}</span>
+                            <IBBadge variant={item.currentStock > 0 ? 'success' : 'error'}>{item.currentStock} UN</IBBadge>
+                        </div>
+                        <p className="text-[9px] text-white/20 font-bold uppercase tracking-widest">{item.material}</p>
+                      </IBCard>
+                    ))}
+                  </div>
                 </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <IBCard className="space-y-4">
+                  <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">Blindagem</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-white/10">R$</span>
+                    <input 
+                      type="number"
+                      placeholder="0,00"
+                      className="w-full bg-transparent text-3xl brand-font-bold outline-none border-b border-white/10 focus:border-white transition-colors py-2 text-left"
+                      value={data.valueBlindagem || ''}
+                      onChange={(e) => handleNumericInput('valueBlindagem', e.target.value)}
+                    />
+                  </div>
+                </IBCard>
+
+                <IBCard className="space-y-4">
+                  <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">Película</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-white/10">R$</span>
+                    <input 
+                      type="number"
+                      placeholder="0,00"
+                      className="w-full bg-transparent text-3xl brand-font-bold outline-none border-b border-white/10 focus:border-white transition-colors py-2 text-left"
+                      value={data.valuePelicula || ''}
+                      onChange={(e) => handleNumericInput('valuePelicula', e.target.value)}
+                    />
+                  </div>
+                </IBCard>
+
+                <IBCard className="space-y-4">
+                  <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">Outros</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-white/10">R$</span>
+                    <input 
+                      type="number"
+                      placeholder="0,00"
+                      className="w-full bg-transparent text-3xl brand-font-bold outline-none border-b border-white/10 focus:border-white transition-colors py-2 text-left"
+                      value={data.valueOthers || ''}
+                      onChange={(e) => handleNumericInput('valueOthers', e.target.value)}
+                    />
+                  </div>
+                </IBCard>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              <IBCard className="bg-white/[0.02] border-white/10 text-left py-10 px-10">
+                <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4">Valor Final</p>
+                <h2 className="text-6xl brand-font-bold tracking-tighter">
+                  {formatCurrency(totalCalculated)}
+                </h2>
+              </IBCard>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {['PIX', 'CREDITO', 'DEBITO', 'DINHEIRO'].map(method => (
-                  <IBlindOptionCard 
-                    key={method} 
-                    label={method} 
-                    active={data.paymentMethod === method} 
-                    onClick={() => setData({...data, paymentMethod: method as any})} 
-                  />
+                  <button 
+                    key={method}
+                    onClick={() => setData({...data, paymentMethod: method as any})}
+                    className={`h-24 rounded-2xl border font-black transition-all flex flex-col items-center justify-center gap-2 ${data.paymentMethod === method ? 'border-white bg-white text-black' : 'border-white/5 text-white/20 hover:border-white/20'}`}
+                  >
+                    <span className="text-[10px] uppercase tracking-widest">{method}</span>
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          {step === 4 && (
-            <div className="space-y-10 animate-slide-up">
-              <div className="space-y-1 text-center">
-                <h1 className="text-3xl font-extrabold tracking-tighter">Validação Jurídica</h1>
-                <p className="text-muted-foreground text-sm font-medium">O cliente deve assinar abaixo para validar o estado do aparelho e a garantia.</p>
+          {step === 3 && (
+            <div className="space-y-12">
+              <div className="space-y-4 text-left">
+                <h1 className="text-4xl md:text-5xl brand-font-bold tracking-tight">Finalização</h1>
+                <p className="text-muted-foreground text-sm font-medium">Assinatura digital do cliente.</p>
               </div>
-              <div className="space-y-6">
+              <div className="bg-card border-white/5 border p-2 rounded-[40px]">
                 <SignaturePad 
-                  onSave={sig => setData({...data, clientSignature: sig})} 
-                  onClear={() => setData({...data, clientSignature: ''})} 
+                    onSave={sig => setData({...data, clientSignature: sig})} 
+                    onClear={() => setData({...data, clientSignature: ''})} 
                 />
-                <div className="flex items-center justify-center gap-2 text-primary">
-                  <CheckCircle2 size={14} strokeWidth={3} />
-                  <p className="text-[10px] font-bold uppercase tracking-widest">Protocolo de Segurança Criptografado</p>
-                </div>
+              </div>
+              
+              <IBCard className="bg-white/5 border-dashed border border-white/10 p-8">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Total Confirmado</span>
+                    <span className="text-2xl brand-font-bold text-white">{formatCurrency(totalCalculated)}</span>
+                  </div>
+              </IBCard>
+
+              <div className="flex items-center gap-3 text-white/20">
+                <CheckCircle size={16} />
+                <span className="text-[9px] font-black uppercase tracking-widest">Aguardando validação</span>
               </div>
             </div>
           )}
         </div>
       </main>
 
-      <footer className="p-6 border-t border-border glass bg-card/50 px-safe">
-        <div className="max-w-2xl mx-auto flex gap-4">
-          {step > 0 && (
-            <IBlindButton variant="secondary" onClick={back} className="px-8 h-14 rounded-2xl">
-              Voltar
-            </IBlindButton>
-          )}
-          <IBlindButton 
-            disabled={!canAdvance}
-            onClick={() => step < 4 ? next() : onComplete(data)} 
-            className="flex-1 h-14 rounded-2xl text-base font-bold tracking-tight"
-          >
-            {step === 4 ? 'Finalizar Atendimento' : 'Próximo Passo'}
-          </IBlindButton>
-        </div>
+      <footer className="p-8 md:p-12 border-t border-white/5 bg-black/50 flex gap-4 max-w-4xl mx-auto w-full sticky bottom-0 backdrop-blur-md">
+        {step > 0 && <IBButton variant="secondary" onClick={back} className="px-10 h-16">Voltar</IBButton>}
+        <IBButton 
+          disabled={!canAdvance} 
+          onClick={() => step < 3 ? next() : onComplete({...data, totalValue: totalCalculated})} 
+          className="flex-1 h-16"
+        >
+          {step === 3 ? 'Concluir Protocolo' : 'Próximo Passo'}
+        </IBButton>
       </footer>
     </div>
   );
