@@ -1,0 +1,20 @@
+{
+  "name": "iBlind",
+  "short_name": "iBlind",
+  "description": "Painel de controle premium para blindagem da iBlind.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/513/513754.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
