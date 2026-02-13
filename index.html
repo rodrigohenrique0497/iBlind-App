@@ -10,38 +10,58 @@
     <link rel="manifest" href="manifest.json">
     <title>iBlind Pro | OS & Inventory SaaS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              background: 'var(--background)',
+              foreground: 'var(--foreground)',
+              card: 'var(--card)',
+              'card-foreground': 'var(--card-foreground)',
+              border: 'var(--border)',
+              primary: 'var(--primary)',
+              muted: 'var(--muted)',
+              'muted-foreground': 'var(--muted-foreground)',
+            }
+          }
+        }
+      }
+    </script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;800&display=swap');
       
       :root {
-        --background: #FFFFFF;
-        --foreground: #0F172A;
-        --card: #F8FAFC;
-        --card-foreground: #0F172A;
-        --border: #E2E8F0;
-        --primary: #4F46E5;
+        --background: #F2F2F7;
+        --foreground: #000000;
+        --card: #FFFFFF;
+        --card-foreground: #000000;
+        --border: rgba(0,0,0,0.05);
+        --primary: #000000;
         --primary-foreground: #FFFFFF;
-        --muted: #F1F5F9;
-        --muted-foreground: #64748B;
+        --muted: #E5E5EA;
+        --muted-foreground: #8E8E93;
         --radius: 24px;
       }
 
       .dark {
         --background: #000000;
         --foreground: #FFFFFF;
-        --card: #0D0D0D;
+        --card: #0A0A0A;
         --card-foreground: #FFFFFF;
-        --border: #1A1A1A;
-        --primary: #6366F1;
-        --primary-foreground: #FFFFFF;
-        --muted: #0F172A;
-        --muted-foreground: #94A3B8;
+        --border: rgba(255,255,255,0.05);
+        --primary: #FFFFFF;
+        --primary-foreground: #000000;
+        --muted: #1C1C1E;
+        --muted-foreground: #8E8E93;
       }
 
       * {
         font-family: 'Montserrat', sans-serif;
         -webkit-tap-highlight-color: transparent;
         font-style: normal !important;
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
       }
 
       body {
@@ -73,7 +93,6 @@
         to { transform: translateY(0); opacity: 1; }
       }
 
-      /* Skeleton Loader */
       .skeleton {
         background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
         background-size: 200% 100%;
@@ -92,7 +111,8 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.45.1"
   }
 }
 </script>

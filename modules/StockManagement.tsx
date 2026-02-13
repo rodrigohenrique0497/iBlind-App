@@ -47,11 +47,11 @@ export const StockManagement: React.FC<StockProps> = ({ items, onUpdateItems }) 
     <div className="space-y-10 animate-premium-in">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-2 text-left">
-          <h2 className="text-4xl brand-font-bold tracking-tight">Estoque</h2>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Inventory Control</p>
+          <h2 className="text-4xl brand-font-bold tracking-tight uppercase">Estoque</h2>
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Controle de Inventário</p>
         </div>
         <IBButton onClick={() => setIsAdding(true)} className="px-10">
-          <Plus size={20} /> Adicionar Item
+          <Plus size={20} /> ADICIONAR ITEM
         </IBButton>
       </header>
 
@@ -59,7 +59,7 @@ export const StockManagement: React.FC<StockProps> = ({ items, onUpdateItems }) 
         <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={20} />
         <input 
           className="w-full bg-white/5 border border-white/5 focus:border-white/20 text-white pl-16 pr-6 py-5 rounded-2xl text-xs font-semibold outline-none transition-all placeholder:text-white/10"
-          placeholder="Pesquisar estoque..."
+          placeholder="Pesquisar por marca ou modelo..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -73,7 +73,7 @@ export const StockManagement: React.FC<StockProps> = ({ items, onUpdateItems }) 
                 <Smartphone size={24} />
               </div>
               <IBBadge variant={item.currentStock <= item.minStock ? 'error' : 'neutral'}>
-                {item.currentStock <= item.minStock ? 'Crítico' : 'Normal'}
+                {item.currentStock <= item.minStock ? 'CRÍTICO' : 'NORMAL'}
               </IBBadge>
             </div>
 
@@ -84,7 +84,7 @@ export const StockManagement: React.FC<StockProps> = ({ items, onUpdateItems }) 
 
             <div className="mt-8 pt-6 border-t border-white/5 flex items-end justify-between">
               <div className="text-left">
-                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Saldo</p>
+                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">SALDO</p>
                 <p className={`text-2xl brand-font-bold ${item.currentStock <= item.minStock ? 'text-red-500' : 'text-white'}`}>
                   {item.currentStock} <span className="text-[10px] opacity-20">UN</span>
                 </p>
@@ -94,39 +94,44 @@ export const StockManagement: React.FC<StockProps> = ({ items, onUpdateItems }) 
                 className="px-4 py-2 text-[8px]" 
                 onClick={() => { setEditingItem(item); setFormData(item); setIsAdding(true); }}
               >
-                Ajustar
+                AJUSTAR
               </IBButton>
             </div>
           </IBCard>
         ))}
+        {filteredItems.length === 0 && (
+          <div className="col-span-full py-20 text-center border border-dashed border-white/5 rounded-[40px]">
+            <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em]">Nenhum item encontrado</p>
+          </div>
+        )}
       </div>
 
       {isAdding && (
         <div className="fixed inset-0 z-[500] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-premium-in">
           <div className="w-full max-w-xl bg-[#0A0A0A] border border-white/10 rounded-[40px] p-10 space-y-8 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-2xl brand-font-bold">{editingItem ? 'Editar Item' : 'Novo Insumo'}</h3>
-              <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="text-white/20 hover:text-white"><X size={24}/></button>
+              <h3 className="text-2xl brand-font-bold uppercase">{editingItem ? 'Editar Insumo' : 'Novo Insumo'}</h3>
+              <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="text-white/20 hover:text-white transition-colors"><X size={24}/></button>
             </div>
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <IBInput label="Marca" placeholder="Ex: Apple" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} />
-                <IBInput label="Modelo" placeholder="Ex: iPhone 16" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} />
+                <IBInput label="Marca do Aparelho" placeholder="Ex: Apple" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} />
+                <IBInput label="Modelo do Aparelho" placeholder="Ex: iPhone 16" value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <IBInput label="Material" placeholder="Ex: Hydrogel" value={formData.material} onChange={e => setFormData({...formData, material: e.target.value})} />
-                <IBInput label="Tipo" placeholder="Ex: Tela" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} />
+                <IBInput label="Parte" placeholder="Ex: Tela" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <IBInput label="Qtd Atual" type="number" value={formData.currentStock} onChange={e => setFormData({...formData, currentStock: parseInt(e.target.value) || 0})} />
-                <IBInput label="Mínimo Alerta" type="number" value={formData.minStock} onChange={e => setFormData({...formData, minStock: parseInt(e.target.value) || 0})} />
+                <IBInput label="Mínimo para Alerta" type="number" value={formData.minStock} onChange={e => setFormData({...formData, minStock: parseInt(e.target.value) || 0})} />
               </div>
             </div>
 
             <div className="flex gap-4 pt-4">
-              <IBButton variant="ghost" className="flex-1" onClick={() => { setIsAdding(false); setEditingItem(null); }}>Cancelar</IBButton>
-              <IBButton variant="primary" className="flex-1" onClick={handleSave}>Salvar Estoque</IBButton>
+              <IBButton variant="ghost" className="flex-1" onClick={() => { setIsAdding(false); setEditingItem(null); }}>CANCELAR</IBButton>
+              <IBButton variant="primary" className="flex-1" onClick={handleSave}>SALVAR NO ESTOQUE</IBButton>
             </div>
           </div>
         </div>

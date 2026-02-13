@@ -8,6 +8,7 @@ import {
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
 import { authService } from './auth.ts';
+import { supabase } from './supabase.ts';
 import { DashboardLayout } from './layouts/DashboardLayout.tsx';
 import { IBCard, IBButton, IBBadge, IBlindStatCard, IBInput } from './components/iBlindUI.tsx';
 import { NewServiceWizard } from './modules/NewServiceWizard.tsx';
@@ -15,32 +16,66 @@ import { StockManagement } from './modules/StockManagement.tsx';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
+type ViewType = 'PAINEL' | 'WIZARD' | 'SERVIÇOS' | 'ESTOQUE' | 'AJUSTES' | 'AUDITORIA';
+
 const App = () => {
   const [user, setUser] = useState<User | null>(() => authService.getSession());
-  const [view, setView] = useState<'DASHBOARD' | 'WIZARD' | 'HISTORY' | 'STOCK' | 'SETTINGS' | 'LOGS'>('DASHBOARD');
+  const [view, setView] = useState<ViewType>('PAINEL');
+  const [theme, setTheme] = useState<AppTheme>(() => (localStorage.getItem('iblind_v12_theme') as AppTheme) || 'DARK');
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [tenant, setTenant] = useState<TenantConfig>(() => JSON.parse(localStorage.getItem('iblind_v12_tenant') || JSON.stringify({
-    companyName: 'iBlind Pro',
+    companyName: 'iBlind',
     primaryColor: '#FFFFFF',
     warrantyDefaultDays: 365,
     allowCustomPricing: true
   })));
   
-  const [history, setHistory] = useState<Attendance[]>(() => JSON.parse(localStorage.getItem('iblind_v12_history') || '[]'));
-  const [inventory, setInventory] = useState<InventoryItem[]>(() => JSON.parse(localStorage.getItem('iblind_v12_stock') || '[]'));
-  const [logs, setLogs] = useState<AuditLog[]>(() => JSON.parse(localStorage.getItem('iblind_v12_logs') || '[]'));
+  const [history, setHistory] = useState<Attendance[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   
   const [selectedProtocol, setSelectedProtocol] = useState<Attendance | null>(null);
   const [auditTarget, setAuditTarget] = useState<string | null>(null);
   const [auditReason, setAuditReason] = useState('');
-  const [theme, setTheme] = useState<AppTheme>('DARK');
+
+  // Sincronização Inicial com Supabase
+  useEffect(() => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [attRes, invRes, logRes] = await Promise.all([
+          supabase.from('attendances').select('*').order('created_at', { ascending: false }),
+          supabase.from('inventory_items').select('*'),
+          supabase.from('audit_logs').select('*').order('timestamp', { ascending: false })
+        ]);
+
+        if (attRes.data) setHistory(attRes.data.map(row => ({...row.data, id: row.id})));
+        if (invRes.data) setInventory(invRes.data.map(row => ({...row.data, id: row.id})));
+        if (logRes.data) setLogs(logRes.data);
+      } catch (err) {
+        console.error('Erro ao carregar dados:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user]);
 
   useEffect(() => {
-    document.documentElement.className = 'dark';
-    localStorage.setItem('iblind_v12_tenant', JSON.stringify(tenant));
-    localStorage.setItem('iblind_v12_history', JSON.stringify(history));
-    localStorage.setItem('iblind_v12_stock', JSON.stringify(inventory));
-    localStorage.setItem('iblind_v12_logs', JSON.stringify(logs));
-  }, [tenant, history, inventory, logs]);
+    if (theme === 'DARK') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('iblind_v12_theme', theme);
+  }, [theme]);
 
   const stats = useMemo(() => {
     const valid = history.filter(a => !a.isDeleted);
@@ -54,7 +89,7 @@ const App = () => {
     };
   }, [history, inventory]);
 
-  const handleCompleteService = (data: Partial<Attendance>) => {
+  const handleCompleteService = async (data: Partial<Attendance>) => {
     const now = new Date();
     const newAttendance: Attendance = {
       ...data,
@@ -67,26 +102,46 @@ const App = () => {
       totalValue: data.totalValue || 0
     } as Attendance;
 
+    // Persistir no Supabase
+    await supabase.from('attendances').insert([{
+      id: newAttendance.id,
+      warranty_id: newAttendance.warrantyId,
+      client_name: newAttendance.clientName,
+      device_model: newAttendance.deviceModel,
+      total_value: newAttendance.totalValue,
+      data: newAttendance
+    }]);
+
     if (data.usedItemId) {
-      setInventory(prev => prev.map(item => {
-        if (item.id === data.usedItemId) {
-          const newQty = Math.max(0, item.currentStock - 1);
-          return { ...item, currentStock: newQty };
-        }
-        return item;
-      }));
+      const itemToUpdate = inventory.find(i => i.id === data.usedItemId);
+      if (itemToUpdate) {
+        const newQty = Math.max(0, itemToUpdate.currentStock - 1);
+        await handleUpdateStock(inventory.map(i => i.id === data.usedItemId ? {...i, currentStock: newQty} : i));
+      }
     }
 
     setHistory([newAttendance, ...history]);
-    setView('DASHBOARD');
+    setView('PAINEL');
   };
 
-  const handleUpdateStock = (updatedItems: InventoryItem[]) => {
+  const handleUpdateStock = async (updatedItems: InventoryItem[]) => {
     setInventory(updatedItems);
+    // Persistência em lote ou individual (aqui simplificado para individual no Supabase se houver mudança)
+    for (const item of updatedItems) {
+      await supabase.from('inventory_items').upsert({
+        id: item.id,
+        brand: item.brand,
+        model: item.model,
+        current_stock: item.currentStock,
+        min_stock: item.minStock,
+        data: item
+      });
+    }
   };
 
-  const handleExcluir = (id: string) => {
+  const handleExcluir = async (id: string) => {
     if (!auditReason || auditReason.length < 5) return;
+    
     const log: AuditLog = {
       id: Math.random().toString(36).substr(2, 9),
       userId: user!.id,
@@ -96,6 +151,10 @@ const App = () => {
       timestamp: new Date().toISOString(),
       targetId: id
     };
+
+    await supabase.from('audit_logs').insert([log]);
+    await supabase.from('attendances').update({ data: { ...history.find(a => a.id === id), isDeleted: true } }).eq('id', id);
+
     setLogs([log, ...logs]);
     setHistory(prev => prev.map(a => a.id === id ? { ...a, isDeleted: true } : a));
     setAuditTarget(null);
@@ -104,80 +163,91 @@ const App = () => {
 
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 
+  if (isLoading) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+       <div className="flex flex-col items-center gap-6">
+          <BrandLogo size="text-6xl" />
+          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-1/2 h-full bg-white animate-[loading_1.5s_infinite]" />
+          </div>
+       </div>
+    </div>
+  );
+
   return (
     <DashboardLayout 
       activeView={view} 
       onViewChange={setView} 
       userName={user.name} 
-      onLogout={() => { authService.setSession(null); setUser(null); }}
+      onLogout={() => { authService.logout(); setUser(null); }}
     >
       <div className="max-content space-y-12 animate-premium-in pb-20">
         
-        {view === 'DASHBOARD' && (
+        {view === 'PAINEL' && (
           <div className="space-y-12">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="space-y-2">
-                <h1 className="text-3xl brand-font-bold tracking-tight">{tenant.companyName}</h1>
-                <p className="text-muted-foreground text-[10px] font-bold tracking-[0.4em] uppercase opacity-40">Intelligence Dashboard</p>
+                <h1 className="text-3xl brand-font-bold tracking-tight text-foreground">iBlind</h1>
+                <p className="text-muted-foreground text-[10px] font-bold tracking-[0.4em] uppercase opacity-40">Painel de Inteligência</p>
               </div>
               <IBButton onClick={() => setView('WIZARD')} className="w-full md:w-auto px-10">
-                <Plus size={20} /> Novo Atendimento
+                <Plus size={20} /> NOVO ATENDIMENTO
               </IBButton>
             </header>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <IBlindStatCard title="Receita Acumulada" value={formatCurrency(stats.revenue)} icon={<TrendingUp size={20}/>} />
-              <IBlindStatCard title="Serviços Hoje" value={stats.countToday} icon={<Zap size={20}/>} color="text-amber-500" />
-              <IBlindStatCard title="Itens Críticos" value={stats.criticalStock} icon={<Package size={20}/>} color={stats.criticalStock > 0 ? "text-red-500" : "text-emerald-500"} />
-              <IBlindStatCard title="Base de Dados" value={stats.totalServices} icon={<Activity size={20}/>} color="text-indigo-500" />
+              <IBlindStatCard title="Receita" value={formatCurrency(stats.revenue)} icon={<TrendingUp size={20}/>} />
+              <IBlindStatCard title="Hoje" value={stats.countToday} icon={<Zap size={20}/>} color="text-amber-500" />
+              <IBlindStatCard title="Alertas" value={stats.criticalStock} icon={<Package size={20}/>} color={stats.criticalStock > 0 ? "text-red-500" : "text-emerald-500"} />
+              <IBlindStatCard title="Serviços" value={stats.totalServices} icon={<Activity size={20}/>} color="text-indigo-500" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <IBCard className="lg:col-span-2 space-y-8">
                 <div className="flex items-center justify-between">
-                  <h2 className="brand-font-bold text-xl flex items-center gap-3">Atividades Recentes</h2>
-                  <IBButton variant="ghost" className="px-4 py-2 text-xs" onClick={() => setView('HISTORY')}>Ver Tudo</IBButton>
+                  <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Atividades</h2>
+                  <IBButton variant="ghost" className="px-4 py-2 text-xs" onClick={() => setView('SERVIÇOS')}>VER TUDO</IBButton>
                 </div>
                 <div className="space-y-4">
                   {history.filter(a => !a.isDeleted).slice(0, 5).map(a => (
                     <div 
                       key={a.id} 
                       onClick={() => setSelectedProtocol(a)}
-                      className="group flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-transparent hover:border-white/10 transition-all cursor-pointer"
+                      className="group flex items-center justify-between p-5 bg-foreground/5 rounded-2xl border border-transparent hover:border-foreground/10 transition-all cursor-pointer"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/5 text-white rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-foreground/5 text-foreground rounded-xl flex items-center justify-center">
                           <Smartphone size={18}/>
                         </div>
                         <div>
-                          <p className="text-xs font-bold brand-font-bold">{a.clientName}</p>
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{a.deviceModel} • {new Date(a.date).toLocaleDateString()}</p>
+                          <p className="text-xs font-bold uppercase text-foreground">{a.clientName}</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{a.deviceModel}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
-                        <p className="text-xs font-bold">{formatCurrency(a.totalValue)}</p>
-                        <ChevronRight size={14} className="text-white/10 group-hover:text-white transition-colors" />
+                        <p className="text-xs font-bold text-foreground">{formatCurrency(a.totalValue)}</p>
+                        <ChevronRight size={14} className="text-foreground/10 group-hover:text-foreground transition-colors" />
                       </div>
                     </div>
                   ))}
-                  {history.length === 0 && <p className="text-center text-white/10 text-xs py-10 uppercase tracking-widest">Sem atividades registradas</p>}
+                  {history.length === 0 && <p className="text-center text-foreground/10 text-xs py-10 uppercase tracking-widest">Vazio</p>}
                 </div>
               </IBCard>
 
               <IBCard className="space-y-8">
-                <h2 className="brand-font-bold text-xl flex items-center gap-3">Estoque</h2>
+                <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Estoque</h2>
                 <div className="space-y-4">
                   {inventory.filter(i => i.currentStock <= i.minStock).slice(0, 4).map(item => (
                     <div key={item.id} className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl flex items-center justify-between">
                       <div>
-                        <p className="text-[10px] font-bold uppercase">{item.model}</p>
-                        <p className="text-[8px] text-red-500 font-bold uppercase mt-1">Reposição Necessária</p>
+                        <p className="text-[10px] font-bold uppercase text-foreground">{item.model}</p>
+                        <p className="text-[8px] text-red-500 font-bold uppercase mt-1">Reposição</p>
                       </div>
                       <IBBadge variant="error">{item.currentStock} un</IBBadge>
                     </div>
                   ))}
-                  <IBButton variant="secondary" className="w-full" onClick={() => setView('STOCK')}>
-                    Acessar Inventário
+                  <IBButton variant="secondary" className="w-full" onClick={() => setView('ESTOQUE')}>
+                    ESTOQUE
                   </IBButton>
                 </div>
               </IBCard>
@@ -185,44 +255,44 @@ const App = () => {
           </div>
         )}
 
-        {view === 'STOCK' && (
+        {view === 'ESTOQUE' && (
           <StockManagement 
             items={inventory} 
             onUpdateItems={handleUpdateStock}
           />
         )}
 
-        {view === 'HISTORY' && (
+        {view === 'SERVIÇOS' && (
           <div className="space-y-10">
             <header className="space-y-2">
-              <h2 className="text-4xl brand-font-bold">Histórico</h2>
-              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Operational Records</p>
+              <h2 className="text-4xl brand-font-bold uppercase text-foreground">Serviços</h2>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Registros Operacionais</p>
             </header>
             <div className="grid gap-4">
               {history.map(a => (
                 <IBCard 
                   key={a.id} 
                   onClick={() => !a.isDeleted && setSelectedProtocol(a)}
-                  className={`flex items-center justify-between p-6 ${a.isDeleted ? 'opacity-20 pointer-events-none' : 'hover:border-white/20 pointer-events-auto cursor-pointer'}`}
+                  className={`flex items-center justify-between p-6 ${a.isDeleted ? 'opacity-20 pointer-events-none' : 'hover:border-foreground/20 pointer-events-auto cursor-pointer'}`}
                 >
                   <div className="flex gap-6">
-                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-white/50">
+                    <div className="w-12 h-12 rounded-xl bg-foreground/5 flex items-center justify-center text-foreground/50">
                         <FileText size={24} />
                     </div>
                     <div>
-                      <h4 className="brand-font-bold text-lg">{a.clientName}</h4>
+                      <h4 className="brand-font-bold text-lg uppercase text-foreground">{a.clientName}</h4>
                       <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">{a.deviceModel} • {a.warrantyId}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-8">
                     <div className="text-right hidden sm:block">
-                      <p className="text-sm font-bold">{formatCurrency(a.totalValue)}</p>
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(a.totalValue)}</p>
                       <p className="text-[8px] text-muted-foreground uppercase mt-1">{new Date(a.date).toLocaleDateString()}</p>
                     </div>
                     {!a.isDeleted && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); setAuditTarget(a.id); }}
-                        className="p-3 text-white/10 hover:text-red-500 transition-colors"
+                        className="p-3 text-foreground/10 hover:text-red-500 transition-colors"
                       >
                         <Trash2 size={18}/>
                       </button>
@@ -234,104 +304,118 @@ const App = () => {
           </div>
         )}
 
-        {view === 'SETTINGS' && (
+        {view === 'AJUSTES' && (
           <div className="max-w-2xl space-y-12">
             <header className="space-y-2">
-              <h2 className="text-4xl brand-font-bold">Ajustes</h2>
-              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">System Configuration</p>
+              <h2 className="text-4xl brand-font-bold uppercase text-foreground">Ajustes</h2>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Configuração do Sistema</p>
             </header>
-            <div className="space-y-8">
-              <IBInput 
-                label="Nome da Empresa" 
-                value={tenant.companyName} 
-                onChange={e => setTenant({...tenant, companyName: e.target.value})} 
-              />
-              <IBInput 
-                label="Dias de Garantia (Padrão)" 
-                type="number"
-                value={tenant.warrantyDefaultDays} 
-                onChange={e => setTenant({...tenant, warrantyDefaultDays: parseInt(e.target.value) || 0})} 
-              />
-              <IBButton onClick={() => setView('DASHBOARD')} className="w-full">Salvar Alterações</IBButton>
-            </div>
+            
+            <IBCard className="space-y-10 p-10">
+              <div className="space-y-6">
+                <h3 className="text-[11px] font-black text-foreground/30 uppercase tracking-[0.4em]">Personalização</h3>
+                <div className="grid grid-cols-1 gap-8">
+                  <IBInput 
+                    label="Nome da Empresa" 
+                    value={tenant.companyName} 
+                    onChange={e => setTenant({...tenant, companyName: e.target.value})} 
+                  />
+                  <IBInput 
+                    label="Prazo de Garantia (Dias)" 
+                    type="number"
+                    value={tenant.warrantyDefaultDays} 
+                    onChange={e => setTenant({...tenant, warrantyDefaultDays: parseInt(e.target.value) || 0})} 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-6 border-t border-foreground/5 pt-10">
+                <h3 className="text-[11px] font-black text-foreground/30 uppercase tracking-[0.4em]">Experiência Visual</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => setTheme('DARK')}
+                    className={`flex items-center justify-center gap-3 p-6 rounded-3xl border transition-all ${theme === 'DARK' ? 'bg-foreground text-background border-foreground shadow-lg' : 'bg-transparent text-foreground/40 border-foreground/10 hover:border-foreground/20'}`}
+                  >
+                    <Moon size={18} />
+                    <span className="text-[10px] font-black tracking-widest uppercase">Escuro Premium</span>
+                  </button>
+                  <button 
+                    onClick={() => setTheme('LIGHT')}
+                    className={`flex items-center justify-center gap-3 p-6 rounded-3xl border transition-all ${theme === 'LIGHT' ? 'bg-foreground text-background border-foreground shadow-lg' : 'bg-transparent text-foreground/40 border-foreground/10 hover:border-foreground/20'}`}
+                  >
+                    <Sun size={18} />
+                    <span className="text-[10px] font-black tracking-widest uppercase">Claro Minimal</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <IBButton onClick={() => setView('PAINEL')} className="w-full h-20">SALVAR AJUSTES</IBButton>
+              </div>
+            </IBCard>
           </div>
         )}
 
-        {view === 'LOGS' && (
+        {view === 'AUDITORIA' && (
           <div className="space-y-10">
             <header className="space-y-2">
-              <h2 className="text-4xl brand-font-bold">Auditoria</h2>
-              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Security Logs</p>
+              <h2 className="text-4xl brand-font-bold uppercase text-foreground">Auditoria</h2>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Logs de Segurança</p>
             </header>
-            <div className="bg-white/5 border border-white/5 rounded-3xl overflow-hidden">
+            <div className="bg-foreground/5 border border-foreground/5 rounded-3xl overflow-hidden">
               <table className="w-full text-left">
-                <thead className="bg-white/5 border-b border-white/5">
+                <thead className="bg-foreground/5 border-b border-foreground/5">
                   <tr>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-white/30">Data</th>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-white/30">Operador</th>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-white/30">Ação</th>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-white/30">Detalhes</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Data</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Operador</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Ação</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Detalhes</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-foreground/5">
                   {logs.map(log => (
-                    <tr key={log.id} className="text-[11px] text-white/60">
+                    <tr key={log.id} className="text-[11px] text-foreground/60">
                       <td className="px-6 py-4">{new Date(log.timestamp).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 font-bold">{log.userName}</td>
+                      <td className="px-6 py-4 font-bold uppercase">{log.userName.split(' ')[0]}</td>
                       <td className="px-6 py-4"><IBBadge variant="error">{log.action}</IBBadge></td>
                       <td className="px-6 py-4 max-w-xs truncate">{log.details}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {logs.length === 0 && <p className="text-center py-20 text-white/10 uppercase tracking-widest text-[10px]">Sem logs registrados</p>}
+              {logs.length === 0 && <p className="text-center py-20 text-foreground/10 uppercase tracking-widest text-[10px]">Sem registros</p>}
             </div>
           </div>
         )}
 
-        {/* MODAL: PROTOCOLO DETALHADO */}
         {selectedProtocol && (
-          <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-premium-in">
-            <div className="w-full max-w-4xl bg-[#0A0A0A] border border-white/10 rounded-[40px] flex flex-col h-[90vh] shadow-2xl overflow-hidden">
-              <header className="p-8 border-b border-white/5 flex items-center justify-between">
+          <div className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-premium-in">
+            <div className="w-full max-w-4xl bg-card border border-foreground/10 rounded-[40px] flex flex-col h-[90vh] shadow-2xl overflow-hidden">
+              <header className="p-8 border-b border-foreground/5 flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl brand-font-bold">Detalhes do Serviço</h3>
-                  <p className="text-[9px] text-white/20 uppercase tracking-[0.3em] mt-1">ID: {selectedProtocol.warrantyId}</p>
+                  <h3 className="text-2xl brand-font-bold uppercase text-foreground">SERVIÇO #{selectedProtocol.warrantyId}</h3>
                 </div>
-                <button onClick={() => setSelectedProtocol(null)} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-colors">
+                <button onClick={() => setSelectedProtocol(null)} className="w-12 h-12 bg-foreground/5 rounded-2xl flex items-center justify-center hover:bg-foreground/10 transition-colors text-foreground">
                   <X size={24} />
                 </button>
               </header>
               <div className="flex-1 overflow-y-auto p-8 space-y-12 no-scrollbar">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <section className="space-y-6">
-                    <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Informações do Cliente</h4>
+                    <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Dados do Cliente</h4>
                     <div className="space-y-2">
-                      <p className="text-xl font-bold">{selectedProtocol.clientName}</p>
-                      <p className="text-sm text-white/40">{selectedProtocol.clientPhone || 'Sem telefone'}</p>
-                    </div>
-                    <div className="pt-6 border-t border-white/5">
-                      <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-4">Aparelho</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[8px] text-white/20 uppercase font-black">Modelo</p>
-                          <p className="text-xs font-bold mt-1 uppercase">{selectedProtocol.deviceModel}</p>
-                        </div>
-                        <div>
-                          <p className="text-[8px] text-white/20 uppercase font-black">IMEI/SN</p>
-                          <p className="text-xs font-bold mt-1 uppercase">{selectedProtocol.deviceIMEI}</p>
-                        </div>
-                      </div>
+                      <p className="text-xl font-bold uppercase text-foreground">{selectedProtocol.clientName}</p>
+                      <p className="text-sm text-foreground/40">{selectedProtocol.clientPhone || 'Sem telefone'}</p>
                     </div>
                   </section>
                   <section className="space-y-6">
-                    <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Vistoria Técnica</h4>
+                    <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Vistoria Prévia</h4>
                     <div className="grid grid-cols-2 gap-4">
                       {['tela', 'traseira', 'cameras'].map(part => (
-                        <div key={part} className={`p-4 rounded-2xl border ${selectedProtocol.state[part].hasDamage ? 'border-red-500/20 bg-red-500/5' : 'border-white/5 bg-white/5'}`}>
-                          <p className="text-[8px] font-black uppercase opacity-40">{part}</p>
-                          <p className="text-[10px] font-bold mt-1 uppercase">
-                            {selectedProtocol.state[part].hasDamage ? 'COM AVARIA' : 'INTEGRO'}
+                        <div key={part} className={`p-4 rounded-2xl border ${selectedProtocol.state[part].hasDamage ? 'border-red-500/20 bg-red-500/5' : 'border-foreground/5 bg-foreground/5'}`}>
+                          <p className="text-[8px] font-black uppercase opacity-40 text-foreground">{part}</p>
+                          <p className="text-[10px] font-bold mt-1 uppercase text-foreground">
+                            {selectedProtocol.state[part].hasDamage ? 'COM AVARIA' : 'ÍNTEGRO'}
                           </p>
                         </div>
                       ))}
@@ -341,10 +425,10 @@ const App = () => {
 
                 {selectedProtocol.photos && selectedProtocol.photos.length > 0 && (
                   <section className="space-y-6">
-                    <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Evidências Fotográficas</h4>
+                    <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Evidências Visuais</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {selectedProtocol.photos.map((photo, i) => (
-                        <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-white/5">
+                        <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-foreground/5">
                           <img src={photo} className="w-full h-full object-cover grayscale" />
                         </div>
                       ))}
@@ -353,55 +437,54 @@ const App = () => {
                 )}
 
                 <section className="space-y-6">
-                  <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Assinatura Digital</h4>
-                  <div className="p-4 bg-white/5 border border-white/10 rounded-3xl h-48 flex items-center justify-center">
+                  <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Assinatura Digital</h4>
+                  <div className="p-4 bg-foreground/5 border border-foreground/10 rounded-3xl h-48 flex items-center justify-center">
                     {selectedProtocol.clientSignature ? (
-                      <img src={selectedProtocol.clientSignature} className="max-h-full invert" />
+                      <img src={selectedProtocol.clientSignature} className={`max-h-full ${theme === 'DARK' ? 'invert' : ''}`} />
                     ) : (
-                      <p className="text-[9px] text-white/10 uppercase tracking-widest">Sem assinatura registrada</p>
+                      <p className="text-[9px] text-foreground/10 uppercase tracking-widest">Sem assinatura registrada</p>
                     )}
                   </div>
                 </section>
               </div>
-              <footer className="p-8 border-t border-white/5 flex justify-between items-center">
+              <footer className="p-8 border-t border-foreground/5 flex justify-between items-center bg-card">
                 <div>
-                  <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em]">Valor do Protocolo</p>
-                  <p className="text-3xl brand-font-bold mt-1">{formatCurrency(selectedProtocol.totalValue)}</p>
+                  <p className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Valor Final</p>
+                  <p className="text-3xl brand-font-bold mt-1 text-foreground">{formatCurrency(selectedProtocol.totalValue)}</p>
                 </div>
-                <IBButton variant="secondary" onClick={() => window.print()} className="px-8">Exportar PDF</IBButton>
+                <IBButton variant="secondary" onClick={() => window.print()} className="px-8">IMPRIMIR PDF</IBButton>
               </footer>
             </div>
           </div>
         )}
 
-        {/* MODAL: EXCLUSÃO */}
         {auditTarget && (
-          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-premium-in">
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-background/90 backdrop-blur-xl animate-premium-in">
             <IBCard className="w-full max-w-lg space-y-8 p-10 border-red-500/20">
               <div className="flex items-center gap-4 text-red-500">
                   <AlertTriangle size={24}/>
-                  <h3 className="text-2xl brand-font-bold">Remover Registro</h3>
+                  <h3 className="text-2xl brand-font-bold uppercase">Excluir Registro</h3>
               </div>
-              <p className="text-xs text-white/40 leading-relaxed uppercase tracking-wider">Esta ação é irreversível e será registrada nos logs de auditoria.</p>
+              <p className="text-xs text-foreground/40 leading-relaxed uppercase tracking-wider">Esta ação é definitiva e será auditada.</p>
               <textarea 
-                className="w-full bg-[#0A0A0A] border border-white/5 rounded-2xl p-6 text-xs outline-none focus:border-red-500 transition-all h-32 resize-none text-white font-bold"
+                className="w-full bg-background border border-foreground/5 rounded-2xl p-6 text-xs outline-none focus:border-red-500 transition-all h-32 resize-none text-foreground font-bold"
                 placeholder="Motivo da exclusão..."
                 value={auditReason}
                 onChange={(e) => setAuditReason(e.target.value)}
               />
               <div className="flex gap-4 pt-4">
-                <IBButton variant="ghost" className="flex-1" onClick={() => setAuditTarget(null)}>Cancelar</IBButton>
-                <IBButton variant="danger" className="flex-1" disabled={auditReason.length < 5} onClick={() => handleExcluir(auditTarget)}>Confirmar</IBButton>
+                <IBButton variant="ghost" className="flex-1" onClick={() => setAuditTarget(null)}>CANCELAR</IBButton>
+                <IBButton variant="danger" className="flex-1" disabled={auditReason.length < 5} onClick={() => handleExcluir(auditTarget)}>CONFIRMAR</IBButton>
               </div>
             </IBCard>
           </div>
         )}
 
         {view === 'WIZARD' && (
-          <div className="fixed inset-0 z-[400] bg-[#000000]">
+          <div className="fixed inset-0 z-[400] bg-background">
             <NewServiceWizard 
               inventory={inventory}
-              onCancel={() => setView('DASHBOARD')}
+              onCancel={() => setView('PAINEL')}
               onComplete={handleCompleteService}
             />
           </div>

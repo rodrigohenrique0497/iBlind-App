@@ -1,60 +1,64 @@
 
 import { User } from './types.ts';
-
-const USERS_STORAGE_KEY = 'iblind_registered_users_v2';
-const SESSION_KEY = 'iblind_current_session_v2';
+import { supabase } from './supabase.ts';
 
 export const authService = {
-  getRegisteredUsers: (): (User & { securityKey: string })[] => {
-    const saved = localStorage.getItem(USERS_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  },
+  register: async (name: string, email: string, password: string): Promise<User | null> => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: name }
+      }
+    });
 
-  register: (name: string, email: string, securityKey: string): User => {
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      email: email.toLowerCase(),
-      role: 'TECNICO' as const,
-      securityKey,
-      themePreference: 'DARK' as const
-    };
-    const current = authService.getRegisteredUsers();
-    // Fix: Replaced undefined 'newItem' with 'newUser'
-    current.push(newUser);
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(current));
-    
-    const { securityKey: _, ...userSession } = newUser;
-    return userSession;
-  },
-
-  login: (email: string, securityKey: string): User | null => {
-    const users = authService.getRegisteredUsers();
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    // Suporte a conta demo para primeiro acesso
-    if (!user && securityKey === '1234' && email === 'admin@iblind.com') {
-      return authService.register('Administrador Demo', email, '1234');
+    if (error) throw error;
+    if (data.user) {
+      return {
+        id: data.user.id,
+        name: data.user.user_metadata.full_name || name,
+        email: data.user.email!,
+        role: 'TECNICO',
+        themePreference: 'DARK'
+      };
     }
-
-    if (user && user.securityKey === securityKey) {
-      const { securityKey: _, ...userSession } = user;
-      return userSession;
-    }
-    
     return null;
+  },
+
+  login: async (email: string, password: string): Promise<User | null> => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+    if (data.user) {
+      return {
+        id: data.user.id,
+        name: data.user.user_metadata.full_name || 'Operador',
+        email: data.user.email!,
+        role: 'TECNICO',
+        themePreference: 'DARK'
+      };
+    }
+    return null;
+  },
+
+  logout: async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('iblind_current_session_v2');
   },
 
   setSession: (user: User | null) => {
     if (user) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      localStorage.setItem('iblind_current_session_v2', JSON.stringify(user));
     } else {
-      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem('iblind_current_session_v2');
     }
   },
 
   getSession: (): User | null => {
-    const saved = localStorage.getItem(SESSION_KEY);
+    const saved = localStorage.getItem('iblind_current_session_v2');
     return saved ? JSON.parse(saved) : null;
   }
 };

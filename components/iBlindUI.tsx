@@ -5,7 +5,7 @@ import { Check, X, Loader2, AlertCircle, Camera, Trash2 } from 'lucide-react';
 export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-card border border-white/5 p-6 rounded-[24px] shadow-none transition-all hover:border-white/10 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
+    className={`bg-card border border-border p-6 rounded-[24px] shadow-none transition-all hover:border-foreground/10 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
   >
     {children}
   </div>
@@ -13,12 +13,12 @@ export const IBCard: React.FC<{ children: React.ReactNode; className?: string; o
 
 export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-primary' }) => (
   <IBCard className="flex items-center gap-6 p-8 relative overflow-hidden group">
-    <div className={`w-14 h-14 rounded-2xl bg-[#0A0A0A] border border-white/5 flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-white group-hover:text-black`}>
+    <div className={`w-14 h-14 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-foreground group-hover:text-background`}>
       {icon}
     </div>
     <div>
       <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40">{title}</p>
-      <p className="text-3xl brand-font-bold mt-1 tracking-tighter">{value}</p>
+      <p className="text-3xl brand-font-bold mt-1 tracking-tighter text-foreground">{value}</p>
     </div>
   </IBCard>
 );
@@ -29,10 +29,10 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
   const base = "px-8 py-5 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.96] flex items-center justify-center gap-3 disabled:opacity-50 select-none border";
   
   const variants = {
-    primary: "bg-white text-black border-white hover:bg-transparent hover:text-white shadow-[0_10px_30px_rgba(255,255,255,0.05)]",
-    secondary: "bg-transparent text-white border-white/10 hover:border-white hover:bg-white hover:text-black",
+    primary: "bg-foreground text-background border-foreground hover:bg-transparent hover:text-foreground shadow-lg",
+    secondary: "bg-transparent text-foreground border-foreground/10 hover:border-foreground hover:bg-foreground hover:text-background",
     danger: "bg-red-600 text-white border-red-600 hover:bg-transparent hover:text-red-500 shadow-lg shadow-red-600/10",
-    ghost: "bg-transparent text-muted-foreground border-transparent hover:text-white hover:bg-white/5"
+    ghost: "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-foreground/5"
   };
 
   return (
@@ -47,7 +47,7 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { l
     {label && <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1 opacity-40">{label}</label>}
     <input
       {...props}
-      className={`w-full bg-[#0A0A0A] border border-white/5 focus:border-white/20 text-foreground px-6 py-5 rounded-2xl outline-none transition-all placeholder:text-white/5 text-xs font-medium text-left ${className}`}
+      className={`w-full bg-background border border-foreground/10 focus:border-foreground/20 text-foreground px-6 py-5 rounded-2xl outline-none transition-all placeholder:text-foreground/5 text-xs font-medium text-left ${className}`}
     />
     {error && <p className="text-[9px] font-black text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
   </div>
@@ -59,11 +59,11 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   <div className="space-y-4">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
-      <div className="flex bg-[#0A0A0A] border border-white/5 p-1 rounded-2xl w-full md:w-auto">
+      <div className="flex bg-foreground/5 border border-border p-1 rounded-2xl w-full md:w-auto">
         <button 
           type="button"
           onClick={() => onChange(false)}
-          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-white text-black' : 'text-muted-foreground hover:text-white'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
         >
           ÍNTREGRO
         </button>
@@ -121,7 +121,7 @@ export const IBImageUpload: React.FC<{
       <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-40">{label}</label>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img, i) => (
-          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-[#0A0A0A] border border-white/5">
+          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-foreground/5 border border-border">
             <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={`Evidence ${i}`} />
             <button 
               type="button"
@@ -133,8 +133,8 @@ export const IBImageUpload: React.FC<{
           </div>
         ))}
         {images.length < max && (
-          <label className="aspect-square rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/5 hover:border-white/30 transition-all text-muted-foreground group">
-            <Camera size={24} className="group-hover:text-white transition-colors" />
+          <label className="aspect-square rounded-2xl border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-foreground/5 hover:border-foreground/30 transition-all text-muted-foreground group">
+            <Camera size={24} className="group-hover:text-foreground transition-colors" />
             <span className="text-[8px] font-black uppercase tracking-[0.3em]">Capturar</span>
             <input 
               type="file" 
@@ -153,11 +153,11 @@ export const IBImageUpload: React.FC<{
 
 export const IBBadge: React.FC<{ children: React.ReactNode; variant?: 'success' | 'warning' | 'error' | 'neutral' | 'primary' }> = ({ children, variant = 'neutral' }) => {
   const styles = {
-    success: 'bg-white text-black',
+    success: 'bg-foreground text-background',
     warning: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
     error: 'bg-red-600 text-white',
-    neutral: 'bg-transparent text-muted-foreground border border-white/10',
-    primary: 'bg-primary/10 text-primary border border-primary/20',
+    neutral: 'bg-transparent text-muted-foreground border border-foreground/10',
+    primary: 'bg-foreground/10 text-foreground border border-foreground/20',
   };
   return (
     <span className={`text-[8px] font-black uppercase tracking-[0.3em] px-3 py-1.5 rounded-lg ${styles[variant]}`}>

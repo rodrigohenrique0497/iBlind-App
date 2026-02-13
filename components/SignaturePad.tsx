@@ -17,11 +17,12 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear }) =
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.strokeStyle = '#FFFFFF';
+    const isDark = document.documentElement.classList.contains('dark');
+    ctx.strokeStyle = isDark ? '#FFFFFF' : '#000000';
     ctx.lineWidth = 4;
     ctx.lineCap = 'round';
     ctx.shadowBlur = 10;
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+    ctx.shadowColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.2)';
 
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
@@ -98,8 +99,8 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear }) =
   };
 
   return (
-    <div className="w-full border-4 border-white/10 rounded-[48px] overflow-hidden bg-white/5 backdrop-blur-3xl shadow-2xl relative">
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white/10 tracking-[0.3em] pointer-events-none">
+    <div className="w-full border-4 border-foreground/10 rounded-[48px] overflow-hidden bg-foreground/5 backdrop-blur-3xl shadow-2xl relative">
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-foreground/10 tracking-[0.3em] pointer-events-none uppercase">
         Área de captura digital
       </div>
       <canvas
@@ -113,11 +114,11 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ onSave, onClear }) =
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
       />
-      <div className="flex justify-center p-6 border-t-2 border-white/5 bg-white/5">
+      <div className="flex justify-center p-6 border-t-2 border-foreground/5 bg-foreground/5">
         <button
           type="button"
           onClick={clear}
-          className="text-xs font-bold text-white/30 hover:text-white transition-colors"
+          className="text-xs font-bold text-foreground/30 hover:text-foreground transition-colors uppercase tracking-widest"
         >
           Resetar assinatura
         </button>
