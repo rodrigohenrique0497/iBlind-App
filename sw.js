@@ -1,19 +1,14 @@
 
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+
+// O Workbox injetará o manifesto aqui durante o build (self.__WB_MANIFEST)
+precacheAndRoute(self.__WB_MANIFEST || []);
+
+cleanupOutdatedCaches();
+
 const CACHE_NAME = 'iblind-pro-v2';
-const ASSETS = [
-  './',
-  './index.html',
-  './index.tsx',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;800&display=swap'
-];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return Promise.allSettled(ASSETS.map(asset => cache.add(asset)));
-    })
-  );
   self.skipWaiting();
 });
 
@@ -25,20 +20,32 @@ self.addEventListener('activate', (e) => {
       );
     })
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
+  // Ignora requisições para extensões do Chrome ou esquemas não-http
+  if (!e.request.url.startsWith('http')) return;
+
   e.respondWith(
     caches.match(e.request).then(response => {
       return response || fetch(e.request).then(networkResponse => {
-        if (e.request.url.startsWith('http')) {
+        // Só faz cache de requisições GET bem sucedidas
+        if (e.request.method === 'GET' && networkResponse.status === 200) {
            const cacheCopy = networkResponse.clone();
            caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheCopy));
         }
         return networkResponse;
       });
     }).catch(() => {
-      // Offline fallback can be added here
+      // Fallback offline se necessário
     })
   );
+});
+
+// Listener para forçar atualização do SW quando solicitado pelo app
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
