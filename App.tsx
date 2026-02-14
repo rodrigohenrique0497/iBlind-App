@@ -3,12 +3,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, TrendingUp, Package, BarChart3, Plus, History, 
   Settings as SettingsIcon, Moon, Sun, Search, Smartphone, Clock, AlertTriangle,
-  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Terminal
+  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Terminal,
+  Link2, Database
 } from 'lucide-react';
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
 import { authService } from './auth.ts';
-import { supabase, isSupabaseConfigured } from './supabase.ts';
+import { supabase, isSupabaseConfigured, saveSupabaseConfig } from './supabase.ts';
 import { DashboardLayout } from './layouts/DashboardLayout.tsx';
 import { IBCard, IBButton, IBBadge, IBlindStatCard, IBInput } from './components/iBlindUI.tsx';
 import { NewServiceWizard } from './modules/NewServiceWizard.tsx';
@@ -23,6 +24,10 @@ const App = () => {
   const [view, setView] = useState<ViewType>('PAINEL');
   const [theme, setTheme] = useState<AppTheme>(() => (localStorage.getItem('iblind_v12_theme') as AppTheme) || 'DARK');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Estados para configuração manual do Supabase
+  const [setupUrl, setSetupUrl] = useState('');
+  const [setupKey, setSetupKey] = useState('');
   
   const [tenant, setTenant] = useState<TenantConfig>(() => JSON.parse(localStorage.getItem('iblind_v12_tenant') || JSON.stringify({
     companyName: 'iBlind',
@@ -39,7 +44,6 @@ const App = () => {
   const [auditTarget, setAuditTarget] = useState<string | null>(null);
   const [auditReason, setAuditReason] = useState('');
 
-  // Sincronização Inicial com Supabase
   useEffect(() => {
     if (!isSupabaseConfigured || !user) {
       setIsLoading(false);
@@ -104,7 +108,6 @@ const App = () => {
       totalValue: data.totalValue || 0
     } as Attendance;
 
-    // Persistir no Supabase
     await supabase.from('attendances').insert([{
       id: newAttendance.id,
       warranty_id: newAttendance.warrantyId,
@@ -163,34 +166,71 @@ const App = () => {
     setAuditReason('');
   };
 
-  // TELA DE ERRO DE CONFIGURAÇÃO (PREMIUM)
+  const handleManualSetup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (setupUrl && setupKey) {
+      saveSupabaseConfig(setupUrl, setupKey);
+    }
+  };
+
+  // TELA DE ERRO / CONFIGURAÇÃO MANUAL
   if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full space-y-8 animate-premium-in">
-          <div className="flex justify-center">
-             <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 shadow-[0_0_50px_-12px_rgba(245,158,11,0.3)]">
-                <AlertTriangle size={40} />
-             </div>
-          </div>
-          <div className="space-y-3">
-            <h2 className="text-2xl brand-font-bold text-white uppercase tracking-tight">Conexão Necessária</h2>
-            <p className="text-sm text-white/40 leading-relaxed font-medium">
-              O iBlind Pro requer uma conexão com o banco de dados Supabase para operar.
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="max-w-xl w-full space-y-12 animate-premium-in">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center mb-8">
+              <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-[32px] flex items-center justify-center text-white shadow-2xl">
+                <Database size={40} strokeWidth={1.5} />
+              </div>
+            </div>
+            <h2 className="text-3xl brand-font-bold text-white uppercase tracking-tight">Conexão de Dados</h2>
+            <p className="text-sm text-white/30 leading-relaxed font-medium uppercase tracking-widest max-w-xs mx-auto">
+              Vincule sua infraestrutura Supabase ao iBlind Pro para iniciar.
             </p>
           </div>
-          <div className="bg-[#0A0A0A] border border-white/5 p-6 rounded-3xl text-left space-y-4">
-            <div className="flex items-center gap-3 text-white/30">
-              <Terminal size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Ações Requeridas</span>
+
+          <IBCard className="bg-[#0A0A0A] border-white/5 p-10 rounded-[40px] space-y-8">
+            <form onSubmit={handleManualSetup} className="space-y-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-1">Supabase URL</label>
+                  <input 
+                    className="w-full bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all placeholder:text-white/5" 
+                    placeholder="https://xxxxxx.supabase.co" 
+                    value={setupUrl}
+                    onChange={e => setSetupUrl(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-1">Anon Public Key</label>
+                  <input 
+                    className="w-full bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all placeholder:text-white/5" 
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." 
+                    type="password"
+                    value={setupKey}
+                    onChange={e => setSetupKey(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <IBButton type="submit" className="w-full h-20 bg-white text-black hover:bg-white/90">
+                <Link2 size={18} /> ESTABELECER VÍNCULO
+              </IBButton>
+            </form>
+
+            <div className="pt-8 border-t border-white/5 text-center">
+               <p className="text-[9px] font-black text-white/10 uppercase tracking-[0.3em]">
+                 Os dados serão salvos localmente no seu navegador.
+               </p>
             </div>
-            <ul className="text-[10px] text-white/60 space-y-3 font-bold uppercase tracking-wider">
-              <li className="flex gap-3"><span className="text-amber-500">1.</span> Criar projeto no Supabase</li>
-              <li className="flex gap-3"><span className="text-amber-500">2.</span> Adicionar SUPABASE_URL</li>
-              <li className="flex gap-3"><span className="text-amber-500">3.</span> Adicionar SUPABASE_ANON_KEY</li>
-            </ul>
-          </div>
-          <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">Ambiente: {window.location.hostname}</p>
+          </IBCard>
+
+          <p className="text-center text-[9px] font-black text-white/5 uppercase tracking-[0.8em] select-none">
+            iBlind © v12.4.0
+          </p>
         </div>
       </div>
     );
