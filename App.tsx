@@ -3,13 +3,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, TrendingUp, Package, BarChart3, Plus, History, 
   Settings as SettingsIcon, Moon, Sun, Search, Smartphone, Clock, AlertTriangle,
-  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Terminal,
-  Link2, Database
+  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight
 } from 'lucide-react';
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
 import { authService } from './auth.ts';
-import { supabase, isSupabaseConfigured, saveSupabaseConfig } from './supabase.ts';
+import { supabase } from './supabase.ts';
 import { DashboardLayout } from './layouts/DashboardLayout.tsx';
 import { IBCard, IBButton, IBBadge, IBlindStatCard, IBInput } from './components/iBlindUI.tsx';
 import { NewServiceWizard } from './modules/NewServiceWizard.tsx';
@@ -24,10 +23,6 @@ const App = () => {
   const [view, setView] = useState<ViewType>('PAINEL');
   const [theme, setTheme] = useState<AppTheme>(() => (localStorage.getItem('iblind_v12_theme') as AppTheme) || 'DARK');
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Estados para configuração manual do Supabase
-  const [setupUrl, setSetupUrl] = useState('');
-  const [setupKey, setSetupKey] = useState('');
   
   const [tenant, setTenant] = useState<TenantConfig>(() => JSON.parse(localStorage.getItem('iblind_v12_tenant') || JSON.stringify({
     companyName: 'iBlind',
@@ -45,13 +40,12 @@ const App = () => {
   const [auditReason, setAuditReason] = useState('');
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !user) {
+    if (!user) {
       setIsLoading(false);
       return;
     }
 
     const fetchData = async () => {
-      if (!supabase) return;
       setIsLoading(true);
       try {
         const [attRes, invRes, logRes] = await Promise.all([
@@ -95,7 +89,6 @@ const App = () => {
   }, [history, inventory]);
 
   const handleCompleteService = async (data: Partial<Attendance>) => {
-    if (!supabase) return;
     const now = new Date();
     const newAttendance: Attendance = {
       ...data,
@@ -130,7 +123,6 @@ const App = () => {
   };
 
   const handleUpdateStock = async (updatedItems: InventoryItem[]) => {
-    if (!supabase) return;
     setInventory(updatedItems);
     for (const item of updatedItems) {
       await supabase.from('inventory_items').upsert({
@@ -145,7 +137,7 @@ const App = () => {
   };
 
   const handleExcluir = async (id: string) => {
-    if (!supabase || !auditReason || auditReason.length < 5) return;
+    if (!auditReason || auditReason.length < 5) return;
     
     const log: AuditLog = {
       id: Math.random().toString(36).substr(2, 9),
@@ -165,76 +157,6 @@ const App = () => {
     setAuditTarget(null);
     setAuditReason('');
   };
-
-  const handleManualSetup = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (setupUrl && setupKey) {
-      saveSupabaseConfig(setupUrl, setupKey);
-    }
-  };
-
-  // TELA DE ERRO / CONFIGURAÇÃO MANUAL
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <div className="max-w-xl w-full space-y-12 animate-premium-in">
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-8">
-              <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-[32px] flex items-center justify-center text-white shadow-2xl">
-                <Database size={40} strokeWidth={1.5} />
-              </div>
-            </div>
-            <h2 className="text-3xl brand-font-bold text-white uppercase tracking-tight">Conexão de Dados</h2>
-            <p className="text-sm text-white/30 leading-relaxed font-medium uppercase tracking-widest max-w-xs mx-auto">
-              Vincule sua infraestrutura Supabase ao iBlind Pro para iniciar.
-            </p>
-          </div>
-
-          <IBCard className="bg-[#0A0A0A] border-white/5 p-10 rounded-[40px] space-y-8">
-            <form onSubmit={handleManualSetup} className="space-y-8">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-1">Supabase URL</label>
-                  <input 
-                    className="w-full bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all placeholder:text-white/5" 
-                    placeholder="https://xxxxxx.supabase.co" 
-                    value={setupUrl}
-                    onChange={e => setSetupUrl(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] ml-1">Anon Public Key</label>
-                  <input 
-                    className="w-full bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all placeholder:text-white/5" 
-                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." 
-                    type="password"
-                    value={setupKey}
-                    onChange={e => setSetupKey(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <IBButton type="submit" className="w-full h-20 bg-white text-black hover:bg-white/90">
-                <Link2 size={18} /> ESTABELECER VÍNCULO
-              </IBButton>
-            </form>
-
-            <div className="pt-8 border-t border-white/5 text-center">
-               <p className="text-[9px] font-black text-white/10 uppercase tracking-[0.3em]">
-                 Os dados serão salvos localmente no seu navegador.
-               </p>
-            </div>
-          </IBCard>
-
-          <p className="text-center text-[9px] font-black text-white/5 uppercase tracking-[0.8em] select-none">
-            iBlind © v12.4.0
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 

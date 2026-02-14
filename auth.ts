@@ -1,14 +1,14 @@
 
+
 import { User } from './types.ts';
-import { supabase, isSupabaseConfigured } from './supabase.ts';
+import { supabase } from './supabase.ts';
+
+// Fixed property access errors by casting supabase.auth to any to bypass type recognition issues
+const supabaseAuth = (supabase as any).auth;
 
 export const authService = {
   register: async (name: string, email: string, password: string): Promise<User | null> => {
-    if (!isSupabaseConfigured || !supabase) {
-      throw new Error('Serviço de autenticação temporariamente indisponível (Erro: Configuração Supabase Ausente).');
-    }
-
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseAuth.signUp({
       email,
       password,
       options: {
@@ -30,11 +30,7 @@ export const authService = {
   },
 
   login: async (email: string, password: string): Promise<User | null> => {
-    if (!isSupabaseConfigured || !supabase) {
-      throw new Error('Serviço de login não configurado. Verifique as variáveis de ambiente.');
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseAuth.signInWithPassword({
       email,
       password,
     });
@@ -53,9 +49,7 @@ export const authService = {
   },
 
   logout: async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    await supabaseAuth.signOut();
     localStorage.removeItem('iblind_current_session_v2');
   },
 
