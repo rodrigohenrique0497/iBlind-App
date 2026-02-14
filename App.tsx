@@ -3,12 +3,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, TrendingUp, Package, BarChart3, Plus, History, 
   Settings as SettingsIcon, Moon, Sun, Search, Smartphone, Clock, AlertTriangle,
-  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight
+  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Terminal
 } from 'lucide-react';
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
 import { authService } from './auth.ts';
-import { supabase } from './supabase.ts';
+import { supabase, isSupabaseConfigured } from './supabase.ts';
 import { DashboardLayout } from './layouts/DashboardLayout.tsx';
 import { IBCard, IBButton, IBBadge, IBlindStatCard, IBInput } from './components/iBlindUI.tsx';
 import { NewServiceWizard } from './modules/NewServiceWizard.tsx';
@@ -41,12 +41,13 @@ const App = () => {
 
   // Sincronização Inicial com Supabase
   useEffect(() => {
-    if (!user) {
+    if (!isSupabaseConfigured || !user) {
       setIsLoading(false);
       return;
     }
 
     const fetchData = async () => {
+      if (!supabase) return;
       setIsLoading(true);
       try {
         const [attRes, invRes, logRes] = await Promise.all([
@@ -90,6 +91,7 @@ const App = () => {
   }, [history, inventory]);
 
   const handleCompleteService = async (data: Partial<Attendance>) => {
+    if (!supabase) return;
     const now = new Date();
     const newAttendance: Attendance = {
       ...data,
@@ -125,8 +127,8 @@ const App = () => {
   };
 
   const handleUpdateStock = async (updatedItems: InventoryItem[]) => {
+    if (!supabase) return;
     setInventory(updatedItems);
-    // Persistência em lote ou individual (aqui simplificado para individual no Supabase se houver mudança)
     for (const item of updatedItems) {
       await supabase.from('inventory_items').upsert({
         id: item.id,
@@ -140,7 +142,7 @@ const App = () => {
   };
 
   const handleExcluir = async (id: string) => {
-    if (!auditReason || auditReason.length < 5) return;
+    if (!supabase || !auditReason || auditReason.length < 5) return;
     
     const log: AuditLog = {
       id: Math.random().toString(36).substr(2, 9),
@@ -160,6 +162,39 @@ const App = () => {
     setAuditTarget(null);
     setAuditReason('');
   };
+
+  // TELA DE ERRO DE CONFIGURAÇÃO (PREMIUM)
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full space-y-8 animate-premium-in">
+          <div className="flex justify-center">
+             <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 shadow-[0_0_50px_-12px_rgba(245,158,11,0.3)]">
+                <AlertTriangle size={40} />
+             </div>
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-2xl brand-font-bold text-white uppercase tracking-tight">Conexão Necessária</h2>
+            <p className="text-sm text-white/40 leading-relaxed font-medium">
+              O iBlind Pro requer uma conexão com o banco de dados Supabase para operar.
+            </p>
+          </div>
+          <div className="bg-[#0A0A0A] border border-white/5 p-6 rounded-3xl text-left space-y-4">
+            <div className="flex items-center gap-3 text-white/30">
+              <Terminal size={14} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Ações Requeridas</span>
+            </div>
+            <ul className="text-[10px] text-white/60 space-y-3 font-bold uppercase tracking-wider">
+              <li className="flex gap-3"><span className="text-amber-500">1.</span> Criar projeto no Supabase</li>
+              <li className="flex gap-3"><span className="text-amber-500">2.</span> Adicionar SUPABASE_URL</li>
+              <li className="flex gap-3"><span className="text-amber-500">3.</span> Adicionar SUPABASE_ANON_KEY</li>
+            </ul>
+          </div>
+          <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">Ambiente: {window.location.hostname}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 

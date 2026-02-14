@@ -1,9 +1,13 @@
 
 import { User } from './types.ts';
-import { supabase } from './supabase.ts';
+import { supabase, isSupabaseConfigured } from './supabase.ts';
 
 export const authService = {
   register: async (name: string, email: string, password: string): Promise<User | null> => {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Serviço de autenticação temporariamente indisponível (Erro: Configuração Supabase Ausente).');
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -26,6 +30,10 @@ export const authService = {
   },
 
   login: async (email: string, password: string): Promise<User | null> => {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Serviço de login não configurado. Verifique as variáveis de ambiente.');
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -45,7 +53,9 @@ export const authService = {
   },
 
   logout: async () => {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     localStorage.removeItem('iblind_current_session_v2');
   },
 
