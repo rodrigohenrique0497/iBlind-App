@@ -1,14 +1,10 @@
 
-
 import { User } from './types.ts';
 import { supabase } from './supabase.ts';
 
-// Fixed property access errors by casting supabase.auth to any to bypass type recognition issues
-const supabaseAuth = (supabase as any).auth;
-
 export const authService = {
   register: async (name: string, email: string, password: string): Promise<User | null> => {
-    const { data, error } = await supabaseAuth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -30,7 +26,7 @@ export const authService = {
   },
 
   login: async (email: string, password: string): Promise<User | null> => {
-    const { data, error } = await supabaseAuth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -49,7 +45,7 @@ export const authService = {
   },
 
   logout: async () => {
-    await supabaseAuth.signOut();
+    await supabase.auth.signOut();
     localStorage.removeItem('iblind_current_session_v2');
   },
 
