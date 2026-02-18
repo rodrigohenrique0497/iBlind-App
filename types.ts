@@ -82,9 +82,6 @@ export interface Attendance {
     traseira: { hasDamage: boolean; notes?: string };
     cameras: { hasDamage: boolean; notes?: string };
     botoes: { hasDamage: boolean; notes?: string };
-    biometria: { hasDamage: boolean; notes?: string };
-    audio: { hasDamage: boolean; notes?: string };
-    conector: { hasDamage: boolean; notes?: string };
   };
   coverage: ServiceCoverage;
   usedItemId?: string; 

@@ -8,84 +8,139 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="manifest.json">
-    <title>iBlind App | SaaS Control</title>
+    <title>iBlind App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
-            fontFamily: {
-              sans: ['Montserrat', 'sans-serif'],
-            },
             colors: {
-              background: '#000000',
-              foreground: '#FFFFFF',
-              card: '#0D0D0D',
-              border: 'rgba(255,255,255,0.06)',
-              primary: '#FFFFFF',
-              surface: '#0D0D0D',
-              'surface-lighter': '#161616',
-            },
-            borderRadius: {
-              'premium': '24px',
-              'super': '32px',
+              background: 'var(--background)',
+              foreground: 'var(--foreground)',
+              card: 'var(--card)',
+              'card-foreground': 'var(--card-foreground)',
+              border: 'var(--border)',
+              primary: 'var(--primary)',
+              muted: 'var(--muted)',
+              'muted-foreground': 'var(--muted-foreground)',
             },
             animation: {
-              'premium-in': 'premiumIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-            },
-            keyframes: {
-              premiumIn: {
-                '0%': { transform: 'translateY(12px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' },
-              }
+              'premium-in': 'premiumIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             }
           }
         }
       }
     </script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;800&display=swap');
       
-      body {
-        background-color: #000000;
-        color: #FFFFFF;
-        -webkit-font-smoothing: antialiased;
-        overscroll-behavior-y: none;
+      :root {
+        --background: #F2F2F7;
+        --foreground: #000000;
+        --card: #FFFFFF;
+        --card-foreground: #000000;
+        --border: rgba(0,0,0,0.08);
+        --primary: #000000;
+        --primary-foreground: #FFFFFF;
+        --muted: #E5E5EA;
+        --muted-foreground: #8E8E93;
+        --radius: 24px;
+      }
+
+      .dark {
+        --background: #000000;
+        --foreground: #FFFFFF;
+        --card: #0A0A0A;
+        --card-foreground: #FFFFFF;
+        --border: rgba(255,255,255,0.06);
+        --primary: #FFFFFF;
+        --primary-foreground: #000000;
+        --muted: #1C1C1E;
+        --muted-foreground: #8E8E93;
+      }
+
+      * {
         font-family: 'Montserrat', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+        font-style: normal !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+      }
+
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+        margin: 0;
+      }
+
+      /* Fix Definitivo para Dropdowns Dark */
+      select, select option {
+        background-color: #0A0A0A !important;
+        color: #FFFFFF !important;
+        border-radius: 12px;
+      }
+
+      /* Estilização da scrollbar para ser premium */
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+      }
+
+      .max-content {
+        max-width: 1440px;
+        margin: 0 auto;
       }
 
       .brand-font-bold {
         font-weight: 800;
-        letter-spacing: -0.04em;
-      }
-
-      .glass {
-        backdrop-filter: blur(28px) saturate(180%);
-        -webkit-backdrop-filter: blur(28px) saturate(180%);
-        background: rgba(0, 0, 0, 0.7);
-      }
-
-      button:active {
-        transform: scale(0.97);
+        letter-spacing: -0.05em;
       }
 
       .no-scrollbar::-webkit-scrollbar { display: none; }
-      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-      .safe-top { padding-top: env(safe-area-inset-top); }
-      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+      .animate-premium-in {
+        animation: premiumIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes premiumIn {
+        from { transform: translateY(10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      .skeleton {
+        background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+      }
+
+      @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      :focus-visible {
+        outline: none;
+      }
     </style>
   <script type="importmap">
 {
   "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.45.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
     "vite": "https://esm.sh/vite@^7.3.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.97.0",
     "vite-plugin-pwa": "https://esm.sh/vite-plugin-pwa@^1.2.0",
     "workbox-precaching": "https://esm.sh/workbox-precaching@^7.4.0"
   }

@@ -3,8 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, TrendingUp, Package, BarChart3, Plus, History, 
   Settings as SettingsIcon, Moon, Sun, Search, Smartphone, Clock, AlertTriangle,
-  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Users as UsersIcon,
-  DownloadCloud, Database, UploadCloud
+  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Users as UsersIcon
 } from 'lucide-react';
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
@@ -100,6 +99,7 @@ const App = () => {
         if (usersRes.data) {
           setSpecialists(usersRes.data);
         } else {
+          // Mock para desenvolvimento se vazio
           setSpecialists([
             { id: '1', name: 'Carlos Técnico', email: 'carlos@iblind.com', role: 'ESPECIALISTA' },
             { id: '2', name: 'Ana Blindagem', email: 'ana@iblind.com', role: 'ESPECIALISTA' }
@@ -166,6 +166,7 @@ const App = () => {
       totalValue: data.totalValue || 0
     } as Attendance;
 
+    // Salvar no banco
     await supabase.from('attendances').insert([{
       id: newAttendance.id,
       warranty_id: newAttendance.warrantyId,
@@ -175,6 +176,7 @@ const App = () => {
       data: newAttendance
     }]);
 
+    // Baixa de estoque se houver item vinculado
     if (data.usedItemId) {
       const itemToUpdate = inventory.find(i => i.id === data.usedItemId);
       if (itemToUpdate) {
@@ -223,66 +225,14 @@ const App = () => {
     setAuditReason('');
   };
 
-  const handleExportSnapshot = () => {
-    const snapshot = {
-      version: 'v12.restoration_point',
-      timestamp: new Date().toISOString(),
-      data: {
-        tenant,
-        history,
-        inventory,
-        specialists,
-        logs
-      }
-    };
-    
-    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `iblind-snapshot-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportSnapshot = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const content = JSON.parse(event.target?.result as string);
-        if (content.version !== 'v12.restoration_point') {
-          alert('Arquivo de restauração inválido ou versão incompatível.');
-          return;
-        }
-
-        if (confirm('Atenção: Restaurar este snapshot substituirá todos os dados atuais na visualização local. Deseja continuar?')) {
-          const { tenant, history, inventory, specialists, logs } = content.data;
-          setTenant(tenant);
-          setHistory(history);
-          setInventory(inventory);
-          setSpecialists(specialists);
-          setLogs(logs);
-          alert('Restauração concluída com sucesso!');
-        }
-      } catch (err) {
-        alert('Erro ao processar arquivo de backup.');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
   if (isRecoveryMode) return <ResetPassword />;
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 
   if (isLoading) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-       <div className="flex flex-col items-center gap-12">
-          <BrandLogo size="text-8xl" />
-          <div className="w-64 h-1.5 bg-white/[0.03] rounded-full overflow-hidden">
+       <div className="flex flex-col items-center gap-6">
+          <BrandLogo size="text-6xl" />
+          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
             <div className="w-1/2 h-full bg-white animate-[loading_1.5s_infinite]" />
           </div>
        </div>
@@ -296,75 +246,75 @@ const App = () => {
       userName={user.name} 
       onLogout={() => { authService.logout(); setUser(null); }}
     >
-      <div className="max-content space-y-20 animate-premium-in pb-20">
+      <div className="max-content space-y-12 animate-premium-in pb-20">
         
         {view === 'PAINEL' && (
-          <div className="space-y-16">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-12">
-              <div className="space-y-3 text-left">
-                <p className="text-[10px] font-bold text-white/10 uppercase tracking-[0.5em] mb-1">Hub iPlanner</p>
-                <h1 className="text-5xl font-extrabold tracking-tighter text-white uppercase">Visão Operacional</h1>
+          <div className="space-y-12">
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+              <div className="space-y-2 text-left">
+                <h1 className="text-3xl brand-font-bold tracking-tight text-foreground uppercase">iBlind</h1>
+                <p className="text-muted-foreground text-[10px] font-bold tracking-[0.4em] uppercase opacity-40">Painel de Inteligência</p>
               </div>
-              <IBButton onClick={() => setView('WIZARD')} className="w-full md:w-auto px-16 h-18 text-xs font-extrabold">
-                <Plus size={20} strokeWidth={4} /> NOVO SERVIÇO
+              <IBButton onClick={() => setView('WIZARD')} className="w-full md:w-auto px-10">
+                <Plus size={20} /> NOVO ATENDIMENTO
               </IBButton>
             </header>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <IBlindStatCard title="Faturamento Bruto" value={formatCurrency(stats.revenue)} icon={<TrendingUp size={24}/>} />
-              <IBlindStatCard title="Tickets Ativos" value={stats.countToday} icon={<Zap size={24}/>} color="text-amber-400" />
-              <IBlindStatCard title="Ruídos de Estoque" value={stats.criticalStock} icon={<Package size={24}/>} color={stats.criticalStock > 0 ? "text-red-500" : "text-emerald-400"} />
-              <IBlindStatCard title="Time Ativo" value={specialists.length} icon={<UsersIcon size={24}/>} color="text-indigo-400" />
+              <IBlindStatCard title="Receita" value={formatCurrency(stats.revenue)} icon={<TrendingUp size={20}/>} />
+              <IBlindStatCard title="Hoje" value={stats.countToday} icon={<Zap size={20}/>} color="text-amber-500" />
+              <IBlindStatCard title="Alertas" value={stats.criticalStock} icon={<Package size={20}/>} color={stats.criticalStock > 0 ? "text-red-500" : "text-emerald-500"} />
+              <IBlindStatCard title="Especialistas" value={specialists.length} icon={<UsersIcon size={20}/>} color="text-indigo-500" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              <div className="lg:col-span-2 space-y-10">
-                <div className="flex items-center justify-between px-2">
-                  <h2 className="font-extrabold text-xl uppercase tracking-tight text-white/60">Serviços Recentes</h2>
-                  <IBButton variant="ghost" className="h-10 px-6 text-[10px] font-bold" onClick={() => setView('SERVIÇOS')}>Ver Logs</IBButton>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <IBCard className="lg:col-span-2 space-y-8">
+                <div className="flex items-center justify-between">
+                  <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Atividades Recentes</h2>
+                  <IBButton variant="ghost" className="px-4 py-2 text-xs" onClick={() => setView('SERVIÇOS')}>VER TUDO</IBButton>
                 </div>
                 <div className="space-y-4">
                   {history.filter(a => !a.isDeleted).slice(0, 5).map(a => (
                     <div 
                       key={a.id} 
                       onClick={() => setSelectedProtocol(a)}
-                      className="group flex items-center justify-between p-8 bg-surface border border-white/5 rounded-premium hover:bg-surface-lighter hover:border-white/20 transition-all cursor-pointer active:scale-[0.99]"
+                      className="group flex items-center justify-between p-5 bg-foreground/5 rounded-2xl border border-transparent hover:border-foreground/10 transition-all cursor-pointer"
                     >
-                      <div className="flex items-center gap-6">
-                        <div className="w-14 h-14 bg-white/[0.03] text-white/40 rounded-2xl flex items-center justify-center border border-white/5 group-hover:scale-110 group-hover:text-white transition-all duration-500">
-                          <Smartphone size={20}/>
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-foreground/5 text-foreground rounded-xl flex items-center justify-center">
+                          <Smartphone size={18}/>
                         </div>
                         <div className="text-left">
-                          <p className="text-base font-extrabold uppercase text-white leading-tight">{a.clientName}</p>
-                          <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest mt-1.5">{a.deviceModel} • <span className="text-white/40">{a.specialistName}</span></p>
+                          <p className="text-xs font-bold uppercase text-foreground">{a.clientName}</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{a.deviceModel} • <span className="text-foreground/40">{a.specialistName || 'S/E'}</span></p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-10">
-                        <p className="text-lg font-extrabold text-white tracking-tight">{formatCurrency(a.totalValue)}</p>
-                        <ChevronRight size={18} className="text-white/5 group-hover:text-white transition-all duration-300" />
+                      <div className="flex items-center gap-6">
+                        <p className="text-xs font-bold text-foreground">{formatCurrency(a.totalValue)}</p>
+                        <ChevronRight size={14} className="text-foreground/10 group-hover:text-foreground transition-colors" />
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </IBCard>
 
-              <div className="space-y-10">
-                <h2 className="font-extrabold text-xl uppercase tracking-tight text-white/60 px-2">Riscos de Inventário</h2>
+              <IBCard className="space-y-8">
+                <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Estoque Crítico</h2>
                 <div className="space-y-4">
                   {inventory.filter(i => i.currentStock <= i.minStock).slice(0, 4).map(item => (
-                    <div key={item.id} className="p-7 bg-red-500/[0.03] border border-red-500/10 rounded-premium flex items-center justify-between group">
+                    <div key={item.id} className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl flex items-center justify-between">
                       <div className="text-left">
-                        <p className="text-[12px] font-extrabold uppercase text-white leading-none">{item.model}</p>
-                        <p className="text-[9px] text-red-400 font-bold uppercase mt-2 tracking-widest">{item.assignedSpecialistName || 'ESTOQUE CENTRAL'}</p>
+                        <p className="text-[10px] font-bold uppercase text-foreground">{item.model}</p>
+                        <p className="text-[8px] text-red-500 font-bold uppercase mt-1">{item.assignedSpecialistName || 'ESTOQUE CENTRAL'}</p>
                       </div>
-                      <IBBadge variant="error">{item.currentStock} UN</IBBadge>
+                      <IBBadge variant="error">{item.currentStock} un</IBBadge>
                     </div>
                   ))}
-                  <IBButton variant="secondary" className="w-full h-16 rounded-premium mt-4" onClick={() => setView('ESTOQUE')}>
-                    CONCILIAÇÃO DE ESTOQUE
+                  <IBButton variant="secondary" className="w-full" onClick={() => setView('ESTOQUE')}>
+                    VER INVENTÁRIO
                   </IBButton>
                 </div>
-              </div>
+              </IBCard>
             </div>
           </div>
         )}
@@ -387,38 +337,38 @@ const App = () => {
         )}
 
         {view === 'SERVIÇOS' && (
-          <div className="space-y-16">
-            <header className="space-y-4 text-left">
-              <h2 className="text-5xl font-extrabold tracking-tighter uppercase text-white">Arquivo Digital</h2>
-              <p className="text-white/10 text-[10px] font-bold uppercase tracking-[0.6em]">Full Traceability Mode</p>
+          <div className="space-y-10">
+            <header className="space-y-2 text-left">
+              <h2 className="text-4xl brand-font-bold uppercase text-foreground">Serviços</h2>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Registros Operacionais</p>
             </header>
-            <div className="grid gap-5">
+            <div className="grid gap-4">
               {history.map(a => (
                 <IBCard 
                   key={a.id} 
                   onClick={() => !a.isDeleted && setSelectedProtocol(a)}
-                  className={`flex items-center justify-between p-8 ${a.isDeleted ? 'opacity-10 grayscale blur-[1px]' : 'hover:border-white/20'}`}
+                  className={`flex items-center justify-between p-6 ${a.isDeleted ? 'opacity-20 pointer-events-none' : 'hover:border-foreground/20 pointer-events-auto cursor-pointer'}`}
                 >
-                  <div className="flex gap-8">
-                    <div className="w-16 h-16 rounded-2xl bg-white/[0.03] flex items-center justify-center text-white/10">
-                        <FileText size={28} />
+                  <div className="flex gap-6">
+                    <div className="w-12 h-12 rounded-xl bg-foreground/5 flex items-center justify-center text-foreground/50">
+                        <FileText size={24} />
                     </div>
                     <div className="text-left">
-                      <h4 className="font-extrabold text-xl uppercase text-white leading-tight">{a.clientName}</h4>
-                      <p className="text-[11px] text-white/20 uppercase font-bold tracking-widest mt-2">{a.deviceModel} • {a.specialistName} • {new Date(a.date).toLocaleDateString()}</p>
+                      <h4 className="brand-font-bold text-lg uppercase text-foreground">{a.clientName}</h4>
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">{a.deviceModel} • Especialista: {a.specialistName}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-10">
+                  <div className="flex items-center gap-8">
                     <div className="text-right hidden sm:block">
-                      <p className="text-xl font-extrabold text-white tracking-tighter">{formatCurrency(a.totalValue)}</p>
-                      <IBBadge variant={a.isDeleted ? "error" : "success"}>{a.isDeleted ? "AUDITADO: REMOVIDO" : "CONFORMIDADE ATIVA"}</IBBadge>
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(a.totalValue)}</p>
+                      <p className="text-[8px] text-muted-foreground uppercase mt-1">{new Date(a.date).toLocaleDateString()}</p>
                     </div>
                     {!a.isDeleted && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); setAuditTarget(a.id); }}
-                        className="p-5 text-white/10 hover:text-red-500 transition-all hover:bg-red-500/5 rounded-2xl active:scale-90"
+                        className="p-3 text-foreground/10 hover:text-red-500 transition-colors"
                       >
-                        <Trash2 size={22}/>
+                        <Trash2 size={18}/>
                       </button>
                     )}
                   </div>
@@ -429,23 +379,23 @@ const App = () => {
         )}
 
         {view === 'AJUSTES' && (
-          <div className="max-w-3xl space-y-16 mx-auto">
-            <header className="space-y-4 text-left">
-              <h2 className="text-5xl font-extrabold tracking-tighter uppercase text-white">Ajustes SaaS</h2>
-              <p className="text-white/10 text-[10px] font-bold uppercase tracking-[0.6em]">System Architecture</p>
+          <div className="max-w-2xl space-y-12">
+            <header className="space-y-2 text-left">
+              <h2 className="text-4xl brand-font-bold uppercase text-foreground">Ajustes</h2>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Configuração do Sistema</p>
             </header>
             
-            <IBCard className="space-y-16 p-12 text-left border-white/[0.03] bg-surface">
-              <div className="space-y-10">
-                <h3 className="text-[12px] font-bold text-white/10 uppercase tracking-[0.5em]">Global Settings</h3>
+            <IBCard className="space-y-10 p-10 text-left">
+              <div className="space-y-6">
+                <h3 className="text-[11px] font-black text-foreground/30 uppercase tracking-[0.4em]">Personalização</h3>
                 <div className="grid grid-cols-1 gap-8">
                   <IBInput 
-                    label="Tenant Identity" 
+                    label="Nome da Empresa" 
                     value={tenant.companyName} 
                     onChange={e => setTenant({...tenant, companyName: e.target.value})} 
                   />
                   <IBInput 
-                    label="SLA de Garantia (Days)" 
+                    label="Prazo de Garantia (Dias)" 
                     type="number"
                     value={tenant.warrantyDefaultDays} 
                     onChange={e => setTenant({...tenant, warrantyDefaultDays: parseInt(e.target.value) || 0})} 
@@ -453,94 +403,94 @@ const App = () => {
                 </div>
               </div>
 
-              <div className="space-y-10 border-t border-white/[0.05] pt-16">
-                <h3 className="text-[12px] font-bold text-white/10 uppercase tracking-[0.5em]">Data & Resilience</h3>
-                <div className="p-10 bg-black/40 rounded-premium border border-white/5 space-y-10">
-                   <div className="flex items-center gap-6 text-white/30">
-                      <Database size={32} className="text-white/10" />
-                      <p className="text-[12px] font-bold uppercase tracking-widest leading-relaxed">
-                        Exportação de snapshot estruturado para backup físico.
-                      </p>
-                   </div>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <IBButton variant="secondary" className="h-18 font-extrabold" onClick={handleExportSnapshot}>
-                        SNAPSHOT OUT
-                      </IBButton>
-                      <label className="flex items-center justify-center gap-3 px-8 h-18 rounded-premium font-extrabold text-[11px] tracking-widest uppercase transition-all duration-300 border bg-surface-lighter text-white border-white/5 hover:border-white/30 cursor-pointer active:scale-95">
-                        RESTORE IN
-                        <input type="file" accept=".json" className="hidden" onChange={handleImportSnapshot} />
-                      </label>
-                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-10 border-t border-white/[0.05] pt-16">
-                <h3 className="text-[12px] font-bold text-white/10 uppercase tracking-[0.5em]">Visual Identity</h3>
-                <div className="grid grid-cols-2 gap-5">
+              <div className="space-y-6 border-t border-foreground/5 pt-10">
+                <h3 className="text-[11px] font-black text-foreground/30 uppercase tracking-[0.4em]">Experiência Visual</h3>
+                <div className="grid grid-cols-2 gap-4">
                   <button 
                     onClick={() => setTheme('DARK')}
-                    className={`flex flex-col items-center justify-center gap-6 h-40 rounded-premium border transition-all duration-500 ${theme === 'DARK' ? 'bg-white text-black border-white shadow-[0_20px_60px_rgba(255,255,255,0.15)]' : 'bg-surface-lighter text-white/10 border-white/5 hover:border-white/20'}`}
+                    className={`flex items-center justify-center gap-3 p-6 rounded-3xl border transition-all ${theme === 'DARK' ? 'bg-foreground text-background border-foreground shadow-lg' : 'bg-transparent text-foreground/40 border-foreground/10 hover:border-foreground/20'}`}
                   >
-                    <Moon size={28} />
-                    <span className="text-[11px] font-extrabold tracking-[0.3em] uppercase">Dark Mode</span>
+                    <Moon size={18} />
+                    <span className="text-[10px] font-black tracking-widest uppercase">Escuro Premium</span>
                   </button>
                   <button 
                     onClick={() => setTheme('LIGHT')}
-                    className={`flex flex-col items-center justify-center gap-6 h-40 rounded-premium border transition-all duration-500 ${theme === 'LIGHT' ? 'bg-white text-black border-white shadow-2xl' : 'bg-surface-lighter text-white/10 border-white/5 hover:border-white/20'}`}
+                    className={`flex items-center justify-center gap-3 p-6 rounded-3xl border transition-all ${theme === 'LIGHT' ? 'bg-foreground text-background border-foreground shadow-lg' : 'bg-transparent text-foreground/40 border-foreground/10 hover:border-foreground/20'}`}
                   >
-                    <Sun size={28} />
-                    <span className="text-[11px] font-extrabold tracking-[0.3em] uppercase">Light Mode</span>
+                    <Sun size={18} />
+                    <span className="text-[10px] font-black tracking-widest uppercase">Claro Minimal</span>
                   </button>
                 </div>
               </div>
 
-              <div className="pt-10">
-                <IBButton onClick={() => setView('PAINEL')} className="w-full h-22 text-sm font-extrabold">SALVAR E ATUALIZAR INTERFACE</IBButton>
+              <div className="pt-4">
+                <IBButton onClick={() => setView('PAINEL')} className="w-full h-20">SALVAR AJUSTES</IBButton>
               </div>
             </IBCard>
           </div>
         )}
 
+        {view === 'AUDITORIA' && (
+          <div className="space-y-10">
+            <header className="space-y-2 text-left">
+              <h2 className="text-4xl brand-font-bold uppercase text-foreground">Auditoria</h2>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Logs de Segurança</p>
+            </header>
+            <div className="bg-foreground/5 border border-foreground/5 rounded-3xl overflow-hidden overflow-x-auto">
+              <table className="w-full text-left min-w-[600px]">
+                <thead className="bg-foreground/5 border-b border-foreground/5">
+                  <tr>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Data</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Especialista</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Ação</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Detalhes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-foreground/5">
+                  {logs.map(log => (
+                    <tr key={log.id} className="text-[11px] text-foreground/60">
+                      <td className="px-6 py-4">{new Date(log.timestamp).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 font-bold uppercase">{log.userName.split(' ')[0]}</td>
+                      <td className="px-6 py-4"><IBBadge variant="error">{log.action}</IBBadge></td>
+                      <td className="px-6 py-4 max-w-xs truncate">{log.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {selectedProtocol && (
-          <div className="fixed inset-0 z-[200] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-6 sm:p-12 animate-premium-in safe-top safe-bottom">
-            <div className="w-full max-w-5xl bg-surface border border-white/10 rounded-super flex flex-col h-full shadow-[0_0_120px_rgba(255,255,255,0.02)] overflow-hidden">
-              <header className="p-10 border-b border-white/5 flex items-center justify-between">
+          <div className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-premium-in">
+            <div className="w-full max-w-4xl bg-card border border-foreground/10 rounded-[40px] flex flex-col h-[90vh] shadow-2xl overflow-hidden">
+              <header className="p-8 border-b border-foreground/5 flex items-center justify-between">
                 <div className="text-left">
-                  <IBBadge variant="primary">REPORT: {selectedProtocol.warrantyId}</IBBadge>
-                  <h3 className="text-3xl font-extrabold uppercase text-white mt-4 tracking-tighter">{selectedProtocol.clientName}</h3>
+                  <h3 className="text-2xl brand-font-bold uppercase text-foreground">SERVIÇO #{selectedProtocol.warrantyId}</h3>
+                  <p className="text-[10px] text-foreground/20 font-black uppercase tracking-widest mt-1">Especialista: {selectedProtocol.specialistName}</p>
                 </div>
-                <button onClick={() => setSelectedProtocol(null)} className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-all text-white active:scale-90">
-                  <X size={28} />
+                <button onClick={() => setSelectedProtocol(null)} className="w-12 h-12 bg-foreground/5 rounded-2xl flex items-center justify-center hover:bg-foreground/10 transition-colors text-foreground">
+                  <X size={24} />
                 </button>
               </header>
-              <div className="flex-1 overflow-y-auto p-12 space-y-20 no-scrollbar text-left">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-                  <section className="space-y-10">
-                    <h4 className="text-[11px] font-bold text-white/10 uppercase tracking-[0.6em]">Hardware Specs</h4>
-                    <div className="space-y-6">
-                      <div className="p-8 bg-black/40 border border-white/5 rounded-premium">
-                        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-3">Unit Model</p>
-                        <p className="text-2xl font-extrabold uppercase tracking-tight">{selectedProtocol.deviceModel}</p>
-                        <p className="text-[11px] text-white/30 font-medium mt-2">IMEI ID: {selectedProtocol.deviceIMEI || 'UNDEFINED'}</p>
-                      </div>
-                      <div className="p-8 bg-black/40 border border-white/5 rounded-premium">
-                        <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mb-3">Client Contact</p>
-                        <p className="text-2xl font-extrabold">{selectedProtocol.clientPhone || 'N/A'}</p>
-                      </div>
+              <div className="flex-1 overflow-y-auto p-8 space-y-12 no-scrollbar text-left">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                  <section className="space-y-6">
+                    <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Dados do Cliente</h4>
+                    <div className="space-y-2">
+                      <p className="text-xl font-bold uppercase text-foreground">{selectedProtocol.clientName}</p>
+                      <p className="text-sm text-foreground/40">{selectedProtocol.clientPhone || 'Sem telefone'}</p>
                     </div>
                   </section>
-                  <section className="space-y-10">
-                    <h4 className="text-[11px] font-bold text-white/10 uppercase tracking-[0.6em]">Incoming Inspection</h4>
-                    <div className="grid grid-cols-2 gap-5">
-                      {(['tela', 'traseira', 'cameras', 'botoes', 'biometria', 'audio', 'conector'] as const).map(part => (
-                        <div key={part} className={`p-6 rounded-premium border ${selectedProtocol.state[part]?.hasDamage ? 'border-red-500/30 bg-red-500/[0.03]' : 'border-white/5 bg-black/40'}`}>
-                          <p className="text-[10px] font-bold uppercase text-white/20 mb-2">{part}</p>
-                          <p className={`text-[12px] font-extrabold uppercase ${selectedProtocol.state[part]?.hasDamage ? 'text-red-400' : 'text-emerald-400'}`}>
-                            {selectedProtocol.state[part]?.hasDamage ? 'AVARIA' : 'ÍNTEGRO'}
+                  <section className="space-y-6">
+                    <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Vistoria Prévia</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {['tela', 'traseira', 'cameras'].map(part => (
+                        <div key={part} className={`p-4 rounded-2xl border ${selectedProtocol.state[part].hasDamage ? 'border-red-500/20 bg-red-500/5' : 'border-foreground/5 bg-foreground/5'}`}>
+                          <p className="text-[8px] font-black uppercase opacity-40 text-foreground">{part}</p>
+                          <p className="text-[10px] font-bold mt-1 uppercase text-foreground">
+                            {selectedProtocol.state[part].hasDamage ? 'COM AVARIA' : 'ÍNTEGRO'}
                           </p>
-                          {selectedProtocol.state[part]?.notes && (
-                            <p className="mt-2 text-[9px] text-white/40 italic">{selectedProtocol.state[part].notes}</p>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -548,40 +498,70 @@ const App = () => {
                 </div>
 
                 {selectedProtocol.photos && selectedProtocol.photos.length > 0 && (
-                  <section className="space-y-10">
-                    <h4 className="text-[11px] font-bold text-white/10 uppercase tracking-[0.6em]">Visual Evidence</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+                  <section className="space-y-6">
+                    <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Evidências Visuais</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {selectedProtocol.photos.map((photo, i) => (
-                        <div key={i} className="aspect-square rounded-premium overflow-hidden border border-white/5 bg-black/40 group">
-                          <img src={photo} className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000" />
+                        <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-foreground/5">
+                          <img src={photo} className="w-full h-full object-cover grayscale" />
                         </div>
                       ))}
                     </div>
                   </section>
                 )}
 
-                <section className="space-y-10">
-                  <h4 className="text-[11px] font-bold text-white/10 uppercase tracking-[0.6em]">Client Confirmation</h4>
-                  <div className="p-10 bg-black/40 border border-white/10 rounded-premium h-72 flex items-center justify-center">
+                <section className="space-y-6">
+                  <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Assinatura Digital</h4>
+                  <div className="p-4 bg-foreground/5 border border-foreground/10 rounded-3xl h-48 flex items-center justify-center">
                     {selectedProtocol.clientSignature ? (
-                      <img src={selectedProtocol.clientSignature} className={`max-h-full ${theme === 'DARK' ? 'invert' : ''} opacity-60 brightness-125`} />
+                      <img src={selectedProtocol.clientSignature} className={`max-h-full ${theme === 'DARK' ? 'invert' : ''}`} />
                     ) : (
-                      <p className="text-[11px] text-white/10 uppercase tracking-[0.3em] font-extrabold">Waiting signature</p>
+                      <p className="text-[9px] text-foreground/10 uppercase tracking-widest">Sem assinatura registrada</p>
                     )}
                   </div>
                 </section>
               </div>
-              <footer className="p-12 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center bg-surface gap-10">
+              <footer className="p-8 border-t border-foreground/5 flex justify-between items-center bg-card">
                 <div className="text-left">
-                  <p className="text-[11px] font-bold text-white/10 uppercase tracking-[0.5em]">Service Final Value</p>
-                  <p className="text-5xl font-extrabold mt-2 text-white tracking-tighter">{formatCurrency(selectedProtocol.totalValue)}</p>
+                  <p className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Valor Final</p>
+                  <p className="text-3xl brand-font-bold mt-1 text-foreground">{formatCurrency(selectedProtocol.totalValue)}</p>
                 </div>
-                <div className="flex gap-5 w-full sm:w-auto">
-                   <IBButton variant="secondary" onClick={() => window.print()} className="flex-1 sm:px-12 h-20">PRINT PDF</IBButton>
-                   <IBButton variant="primary" onClick={() => setSelectedProtocol(null)} className="flex-1 sm:px-14 h-20">DISMISS</IBButton>
-                </div>
+                <IBButton variant="secondary" onClick={() => window.print()} className="px-8">IMPRIMIR PDF</IBButton>
               </footer>
             </div>
+          </div>
+        )}
+
+        {auditTarget && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-background/90 backdrop-blur-xl animate-premium-in">
+            <IBCard className="w-full max-w-lg space-y-8 p-10 border-red-500/20 text-left">
+              <div className="flex items-center gap-4 text-red-500">
+                  <AlertTriangle size={24}/>
+                  <h3 className="text-2xl brand-font-bold uppercase">Excluir Registro</h3>
+              </div>
+              <p className="text-xs text-foreground/40 leading-relaxed uppercase tracking-wider">Esta ação é definitiva e será auditada.</p>
+              <textarea 
+                className="w-full bg-background border border-foreground/5 rounded-2xl p-6 text-xs outline-none focus:border-red-500 transition-all h-32 resize-none text-foreground font-bold"
+                placeholder="Motivo da exclusão..."
+                value={auditReason}
+                onChange={(e) => setAuditReason(e.target.value)}
+              />
+              <div className="flex gap-4 pt-4">
+                <IBButton variant="ghost" className="flex-1" onClick={() => setAuditTarget(null)}>CANCELAR</IBButton>
+                <IBButton variant="danger" className="flex-1" disabled={auditReason.length < 5} onClick={() => handleExcluir(auditTarget)}>CONFIRMAR</IBButton>
+              </div>
+            </IBCard>
+          </div>
+        )}
+
+        {view === 'WIZARD' && (
+          <div className="fixed inset-0 z-[400] bg-background">
+            <NewServiceWizard 
+              inventory={inventory}
+              specialists={specialists}
+              onCancel={() => setView('PAINEL')}
+              onComplete={handleCompleteService}
+            />
           </div>
         )}
 
