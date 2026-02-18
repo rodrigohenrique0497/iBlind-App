@@ -96,13 +96,11 @@ const App = () => {
         if (invRes.data) setInventory(invRes.data.map(row => ({...row.data, id: row.id})));
         if (logRes.data) setLogs(logRes.data);
         
-        if (usersRes.data && usersRes.data.length > 0) {
+        // Removido o fallback de dados fictícios (Carlos/Ana)
+        if (usersRes.data) {
           setSpecialists(usersRes.data);
         } else {
-          setSpecialists([
-            { id: 'spec1', name: 'Especialista Carlos', email: 'carlos@iblind.com', role: 'ESPECIALISTA' },
-            { id: 'spec2', name: 'Especialista Ana', email: 'ana@iblind.com', role: 'ESPECIALISTA' }
-          ]);
+          setSpecialists([]);
         }
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
