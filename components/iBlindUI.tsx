@@ -45,19 +45,19 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
 export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
   const Component = as;
   
-  // Retornando ao contraste original (transparente) solicitado pelo usuário
+  // Design SaaS Premium: Fundo quase preto sólido para melhor contraste no tema dark
   const inputBaseClasses = `
-    w-full bg-foreground/[0.03] border border-foreground/5 
-    focus:border-foreground/20 focus:bg-foreground/[0.05] 
+    w-full bg-[#121212] border border-white/5 
+    focus:border-white/20 focus:bg-[#181818] 
     text-foreground px-6 py-5 rounded-2xl 
     outline-none transition-all duration-300 
-    placeholder:text-foreground/20 text-xs font-semibold 
+    placeholder:text-white/10 text-xs font-semibold 
     appearance-none
   `;
 
   return (
     <div className="space-y-2 w-full text-left">
-      {label && <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-60">{label}</label>}
+      {label && <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">{label}</label>}
       <div className="relative">
         <Component
           {...props as any}
@@ -66,7 +66,7 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTML
           {children}
         </Component>
         {as === 'select' && (
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
              <ChevronDown size={14} />
           </div>
         )}
@@ -141,7 +141,7 @@ export const IBImageUpload: React.FC<{
 
   return (
     <div className="space-y-4">
-      <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-60">{label}</label>
+      <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">{label}</label>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img, i) => (
           <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-foreground/5 border border-border">
