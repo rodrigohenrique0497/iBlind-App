@@ -441,7 +441,7 @@ const App = () => {
                 <thead className="bg-foreground/5 border-b border-foreground/5">
                   <tr>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Data</th>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Operador</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Especialista</th>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Ação</th>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Detalhes</th>
                   </tr>

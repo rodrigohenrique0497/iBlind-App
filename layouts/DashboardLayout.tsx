@@ -19,7 +19,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
     { id: 'ESPECIALISTAS', label: 'ESPECIALISTAS', icon: <UsersIcon size={18} /> },
     { id: 'ESTOQUE', label: 'ESTOQUE', icon: <Package size={18} /> },
     { id: 'SERVIÇOS', label: 'SERVIÇOS', icon: <History size={18} /> },
-    { id: 'AUDITORIA', label: <Activity size={18} />, icon: <Activity size={18} /> },
+    { id: 'AUDITORIA', label: 'AUDITORIA', icon: <Activity size={18} /> },
     { id: 'AJUSTES', label: 'AJUSTES', icon: <SettingsIcon size={18} /> },
   ];
 
@@ -45,7 +45,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
               }`}
             >
               {item.icon}
-              {item.label}
+              {typeof item.label === 'string' ? item.label : item.id}
             </button>
           ))}
         </nav>
@@ -85,7 +85,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
             }`}
           >
             {item.icon}
-            <span className="text-[8px] font-black tracking-widest uppercase">{item.label}</span>
+            <span className="text-[8px] font-black tracking-widest uppercase">{typeof item.label === 'string' ? item.label : item.id}</span>
           </button>
         ))}
         
@@ -107,7 +107,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
             }`}
           >
             {item.icon}
-            <span className="text-[8px] font-black tracking-widest uppercase">{item.label}</span>
+            <span className="text-[8px] font-black tracking-widest uppercase">{typeof item.label === 'string' ? item.label : item.id}</span>
           </button>
         ))}
       </nav>
