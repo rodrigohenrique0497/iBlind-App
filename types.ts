@@ -49,7 +49,7 @@ export interface InventoryItem {
   suggestedPrice: number;
   lastEntryDate: string;
   category: InventoryCategory;
-  assignedSpecialistId?: string; // Vinculação ao Especialista
+  assignedSpecialistId?: string;
   assignedSpecialistName?: string;
   observations?: string;
 }
@@ -71,7 +71,7 @@ export interface Attendance {
   warrantyUntil: string;
   technicianId: string;
   technicianName: string;
-  specialistId: string; // Especialista responsável pelo serviço
+  specialistId: string;
   specialistName: string;
   clientName: string;
   clientPhone: string;

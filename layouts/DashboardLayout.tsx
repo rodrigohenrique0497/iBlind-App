@@ -19,7 +19,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
     { id: 'ESPECIALISTAS', label: 'ESPECIALISTAS', icon: <UsersIcon size={18} /> },
     { id: 'ESTOQUE', label: 'ESTOQUE', icon: <Package size={18} /> },
     { id: 'SERVIÇOS', label: 'SERVIÇOS', icon: <History size={18} /> },
-    { id: 'AUDITORIA', label: 'AUDITORIA', icon: <Activity size={18} /> },
+    { id: 'AUDITORIA', label: <Activity size={18} />, icon: <Activity size={18} /> },
     { id: 'AJUSTES', label: 'AJUSTES', icon: <SettingsIcon size={18} /> },
   ];
 

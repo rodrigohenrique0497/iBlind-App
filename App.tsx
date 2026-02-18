@@ -99,7 +99,11 @@ const App = () => {
         if (usersRes.data) {
           setSpecialists(usersRes.data);
         } else {
-          setSpecialists([]);
+          // Mock para desenvolvimento se vazio
+          setSpecialists([
+            { id: '1', name: 'Carlos Técnico', email: 'carlos@iblind.com', role: 'ESPECIALISTA' },
+            { id: '2', name: 'Ana Blindagem', email: 'ana@iblind.com', role: 'ESPECIALISTA' }
+          ]);
         }
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
@@ -162,6 +166,7 @@ const App = () => {
       totalValue: data.totalValue || 0
     } as Attendance;
 
+    // Salvar no banco
     await supabase.from('attendances').insert([{
       id: newAttendance.id,
       warranty_id: newAttendance.warrantyId,
@@ -171,6 +176,7 @@ const App = () => {
       data: newAttendance
     }]);
 
+    // Baixa de estoque se houver item vinculado
     if (data.usedItemId) {
       const itemToUpdate = inventory.find(i => i.id === data.usedItemId);
       if (itemToUpdate) {
@@ -200,16 +206,12 @@ const App = () => {
   const handleExcluir = async (id: string) => {
     if (!auditReason || auditReason.length < 5) return;
     
-    // Obtém o especialista responsável pelo serviço antes da exclusão
-    const service = history.find(a => a.id === id);
-    const responsibleSpecialist = service?.specialistName || 'N/A';
-    
     const log: AuditLog = {
       id: Math.random().toString(36).substr(2, 9),
       userId: user!.id,
-      userName: responsibleSpecialist, // Vincula o nome do especialista responsável no log principal
+      userName: user!.name,
       action: 'EXCLUSÃO',
-      details: `Protocolo ${id} removido por ${user!.name}. Justificativa: ${auditReason}`,
+      details: `Protocolo ${id} removido. Justificativa: ${auditReason}`,
       timestamp: new Date().toISOString(),
       targetId: id
     };
@@ -439,7 +441,7 @@ const App = () => {
                 <thead className="bg-foreground/5 border-b border-foreground/5">
                   <tr>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Data</th>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Especialista</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Operador</th>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Ação</th>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Detalhes</th>
                   </tr>
@@ -448,7 +450,7 @@ const App = () => {
                   {logs.map(log => (
                     <tr key={log.id} className="text-[11px] text-foreground/60">
                       <td className="px-6 py-4">{new Date(log.timestamp).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 font-bold uppercase">{log.userName}</td>
+                      <td className="px-6 py-4 font-bold uppercase">{log.userName.split(' ')[0]}</td>
                       <td className="px-6 py-4"><IBBadge variant="error">{log.action}</IBBadge></td>
                       <td className="px-6 py-4 max-w-xs truncate">{log.details}</td>
                     </tr>
