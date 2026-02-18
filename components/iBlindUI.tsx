@@ -1,23 +1,23 @@
 
 import React from 'react';
-import { Check, X, Loader2, AlertCircle, Camera, Trash2, ChevronDown } from 'lucide-react';
+import { Loader2, ChevronDown, Camera, Trash2 } from 'lucide-react';
 
 export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-surface border border-border p-8 rounded-premium transition-all duration-300 ${onClick ? 'cursor-pointer hover:bg-surface-lighter active:scale-[0.99]' : ''} ${className}`}
+    className={`bg-surface border border-white/5 p-8 rounded-premium transition-all duration-500 ${onClick ? 'cursor-pointer hover:bg-surface-lighter hover:border-white/10 active:scale-[0.98]' : ''} ${className}`}
   >
     {children}
   </div>
 );
 
-export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-primary' }) => (
+export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-white' }) => (
   <IBCard className="flex items-center gap-6 p-7">
     <div className={`w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center ${color}`}>
       {React.cloneElement(icon as React.ReactElement, { size: 22 })}
     </div>
     <div className="text-left">
-      <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-1">{title}</p>
+      <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-1">{title}</p>
       <p className="text-2xl font-extrabold tracking-tight text-white leading-none">{value}</p>
     </div>
   </IBCard>
@@ -26,10 +26,10 @@ export const IBlindStatCard: React.FC<{ title: string; value: string | number; i
 export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' | 'ghost', isLoading?: boolean }> = ({ 
   children, variant = 'primary', isLoading, className = '', ...props 
 }) => {
-  const base = "h-14 px-8 rounded-premium font-bold text-[11px] tracking-[0.1em] uppercase transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 select-none";
+  const base = "h-14 px-8 rounded-premium font-extrabold text-[11px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 select-none cursor-pointer";
   
   const variants = {
-    primary: "bg-white text-black border border-white hover:bg-white/90 active:scale-95 shadow-[0_8px_30px_rgb(255,255,255,0.1)]",
+    primary: "bg-white text-black border border-white hover:bg-white/90 active:scale-95 shadow-[0_10px_40px_rgba(255,255,255,0.1)]",
     secondary: "bg-surface-lighter text-white border border-white/5 hover:border-white/20 active:bg-white/[0.08] active:scale-95",
     danger: "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white active:scale-95",
     ghost: "bg-transparent text-white/40 hover:text-white hover:bg-white/[0.04] active:scale-95"
@@ -50,13 +50,13 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTML
     focus:border-white/30 focus:bg-[#1A1A1A] 
     text-white px-6 rounded-premium 
     outline-none transition-all duration-300 
-    placeholder:text-white/10 text-sm font-medium
+    placeholder:text-white/10 text-sm font-semibold
     appearance-none
   `;
 
   return (
     <div className="space-y-3 w-full text-left">
-      {label && <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] ml-2">{label}</label>}
+      {label && <label className="text-[10px] font-extrabold text-white/20 uppercase tracking-[0.3em] ml-2">{label}</label>}
       <div className="relative">
         <Component
           {...props as any}
@@ -79,20 +79,20 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   label, value, onChange, notes, onNotesChange 
 }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between gap-6 p-2 bg-surface rounded-premium border border-white/5">
-      <span className="text-[11px] font-bold text-white uppercase tracking-[0.1em] ml-4">{label}</span>
+    <div className="flex items-center justify-between gap-6 p-2 bg-surface rounded-premium border border-white/5 transition-all hover:border-white/10">
+      <span className="text-[11px] font-extrabold text-white uppercase tracking-[0.1em] ml-4">{label}</span>
       <div className="flex bg-background p-1 rounded-2xl border border-white/5">
         <button 
           type="button"
           onClick={() => onChange(false)}
-          className={`h-11 px-8 rounded-xl text-[10px] font-bold tracking-widest transition-all ${!value ? 'bg-white text-black' : 'text-white/20 hover:text-white'}`}
+          className={`h-11 px-8 rounded-xl text-[10px] font-black tracking-widest transition-all ${!value ? 'bg-white text-black' : 'text-white/20 hover:text-white'}`}
         >
           ÍNTEGRO
         </button>
         <button 
           type="button"
           onClick={() => onChange(true)}
-          className={`h-11 px-8 rounded-xl text-[10px] font-bold tracking-widest transition-all ${value ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-white/20 hover:text-red-400'}`}
+          className={`h-11 px-8 rounded-xl text-[10px] font-black tracking-widest transition-all ${value ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-white/20 hover:text-red-400'}`}
         >
           AVARIA
         </button>
@@ -136,7 +136,7 @@ export const IBImageUpload: React.FC<{
 
   return (
     <div className="space-y-4">
-      <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] ml-2">{label}</label>
+      <label className="text-[10px] font-extrabold text-white/20 uppercase tracking-[0.3em] ml-2">{label}</label>
       <div className="grid grid-cols-4 gap-4">
         {images.map((img, i) => (
           <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-surface-lighter border border-white/5">
@@ -153,7 +153,7 @@ export const IBImageUpload: React.FC<{
         {images.length < max && (
           <label className="aspect-square rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.04] hover:border-white/30 transition-all text-white/10 hover:text-white active:scale-95">
             <Camera size={24} />
-            <span className="text-[9px] font-bold uppercase tracking-widest">Adicionar</span>
+            <span className="text-[9px] font-black uppercase tracking-widest">Adicionar</span>
             <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} multiple />
           </label>
         )}
@@ -171,12 +171,8 @@ export const IBBadge: React.FC<{ children: React.ReactNode; variant?: 'success' 
     primary: 'bg-white text-black font-extrabold',
   };
   return (
-    <span className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg ${styles[variant]}`}>
+    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg ${styles[variant]}`}>
       {children}
     </span>
   );
 };
-
-export const IBSkeleton: React.FC<{ className?: string }> = ({ className = "h-4 w-full" }) => (
-  <div className={`skeleton ${className} bg-white/5 animate-pulse rounded-lg`} />
-);

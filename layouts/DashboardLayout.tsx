@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   Plus, LayoutDashboard, Package, History, LogOut, 
-  User as UserIcon, Settings as SettingsIcon, Shield, Activity, Users as UsersIcon
+  User as UserIcon, Settings as SettingsIcon, Activity, Users as UsersIcon
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -33,27 +33,27 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
       <aside className="hidden lg:flex flex-col w-[300px] border-r border-white/5 p-12 fixed h-full bg-surface z-50">
         <div className="flex flex-col mb-16">
           <h1 className="text-3xl font-extrabold tracking-tighter text-white uppercase leading-none">iBlind</h1>
-          <p className="text-[9px] font-bold tracking-[0.5em] text-white/10 uppercase mt-2">Control Hub</p>
+          <p className="text-[9px] font-black tracking-[0.5em] text-white/10 uppercase mt-2">Control Hub</p>
         </div>
         
-        <nav className="flex-1 space-y-3">
+        <nav className="flex-1 space-y-4">
           {navItems.map(item => (
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center gap-5 px-6 py-4 rounded-premium transition-all duration-300 font-bold text-[11px] uppercase tracking-widest group relative ${
+              className={`w-full flex items-center gap-5 px-6 py-4 rounded-premium transition-all duration-300 font-extrabold text-[11px] uppercase tracking-widest group relative ${
                 activeView === item.id 
-                ? 'bg-white/[0.05] text-white border border-white/5' 
-                : 'text-white/20 hover:text-white hover:bg-white/[0.02]'
+                ? 'bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.1)]' 
+                : 'text-white/20 hover:text-white hover:bg-white/[0.03]'
               }`}
             >
-              {activeView === item.id && (
-                <div className="absolute left-0 w-1 h-5 bg-white rounded-r-full" />
-              )}
-              <span className={`transition-transform duration-300 ${activeView === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+              <span className={`transition-transform duration-500 ${activeView === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
                 {item.icon}
               </span>
               {item.label}
+              {activeView === item.id && (
+                <div className="absolute left-0 w-1 h-5 bg-black rounded-r-full hidden" />
+              )}
             </button>
           ))}
         </nav>
@@ -63,26 +63,23 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
             <div className="w-11 h-11 bg-white/[0.03] rounded-2xl flex items-center justify-center border border-white/5 text-white/40">
               <UserIcon size={20} />
             </div>
-            <div className="overflow-hidden">
+            <div className="overflow-hidden text-left">
               <p className="text-[11px] font-extrabold text-white truncate uppercase tracking-tight">{userName}</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Sincronizado</p>
-              </div>
+              <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mt-1">Sincronizado</p>
             </div>
           </div>
-          <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 py-3 text-[10px] font-bold text-white/10 hover:text-red-400 transition-all uppercase tracking-[0.2em] active:scale-95">
+          <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 py-3 text-[10px] font-black text-white/10 hover:text-red-400 transition-all uppercase tracking-[0.2em] active:scale-95">
             <LogOut size={16} />
             Logout
           </button>
         </div>
       </aside>
 
-      {/* MOBILE HEADER iPlanner Style */}
+      {/* MOBILE HEADER */}
       <header className="lg:hidden flex items-center justify-between px-8 h-24 border-b border-white/5 bg-black/80 glass fixed top-0 w-full z-[100] safe-top">
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
             <h2 className="text-xl font-extrabold tracking-tighter uppercase leading-none">iBlind</h2>
-            <p className="text-[8px] font-bold text-white/10 uppercase tracking-[0.4em] mt-1">SaaS Interface</p>
+            <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em] mt-1">SaaS Interface</p>
           </div>
           <button onClick={() => onViewChange('AJUSTES')} className="w-12 h-12 flex items-center justify-center bg-white/[0.03] rounded-2xl text-white/20 active:scale-90 transition-all">
             <SettingsIcon size={22} />
@@ -107,7 +104,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
             }`}
           >
             {item.icon}
-            <span className="text-[8px] font-bold tracking-widest uppercase">{item.label}</span>
+            <span className="text-[8px] font-black tracking-widest uppercase">{item.label}</span>
             {activeView === item.id && (
               <div className="absolute top-0 w-8 h-0.5 bg-white rounded-full -mt-4 shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
             )}
@@ -132,7 +129,7 @@ export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, o
             }`}
           >
             {item.icon}
-            <span className="text-[8px] font-bold tracking-widest uppercase">{item.label}</span>
+            <span className="text-[8px] font-black tracking-widest uppercase">{item.label}</span>
             {activeView === item.id && (
               <div className="absolute top-0 w-8 h-0.5 bg-white rounded-full -mt-4 shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
             )}
