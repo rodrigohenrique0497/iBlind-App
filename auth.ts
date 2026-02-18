@@ -45,8 +45,9 @@ export const authService = {
   },
 
   sendResetEmail: async (email: string) => {
+    // Forçamos o redirecionamento para o origin (https://app.iblind.com.br)
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}`,
+      redirectTo: window.location.origin,
     });
     if (error) throw error;
   },

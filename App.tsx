@@ -42,19 +42,24 @@ const App = () => {
   const [auditReason, setAuditReason] = useState('');
 
   useEffect(() => {
-    // Detecta se o usuário veio de um link de recuperação (hash no URL)
-    const handleHash = () => {
-      if (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token=')) {
+    // Detecta se o usuário veio de um link de recuperação via hash ou rota
+    const checkRecovery = () => {
+      const hasRecoveryToken = window.location.hash.includes('type=recovery') || 
+                               window.location.hash.includes('access_token=') ||
+                               window.location.pathname.includes('reset-password');
+      
+      if (hasRecoveryToken) {
         setIsRecoveryMode(true);
       }
     };
-    handleHash();
 
-    // Listener para mudanças de auth (necessário para pegar a sessão após o link)
+    checkRecovery();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveryMode(true);
       }
+      
       if (session?.user && !user) {
         const u: User = {
           id: session.user.id,
