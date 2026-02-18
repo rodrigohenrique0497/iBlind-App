@@ -58,7 +58,7 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
     <div className="space-y-10 animate-premium-in">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-2 text-left">
-          <h2 className="text-4xl brand-font-bold tracking-tight uppercase">Estoque Operacional</h2>
+          <h2 className="text-4xl brand-font-bold tracking-tight uppercase text-foreground">Estoque Operacional</h2>
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Gestão por Especialista</p>
         </div>
         <IBButton onClick={() => setIsAdding(true)} className="px-10">
@@ -100,7 +100,7 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
             </div>
 
             <div className="flex-1 space-y-1">
-              <h4 className="brand-font-bold text-lg leading-tight uppercase">{item.brand} {item.model}</h4>
+              <h4 className="brand-font-bold text-lg leading-tight uppercase text-foreground">{item.brand} {item.model}</h4>
               <p className="text-[9px] font-bold text-foreground/30 uppercase tracking-widest">{item.material} • {item.type}</p>
               <div className="flex items-center gap-2 mt-4 text-foreground/20">
                 <Users size={12} />
@@ -108,7 +108,7 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-foreground/5 flex items-end justify-between">
+            <div className="mt-8 pt-6 border-t border-border flex items-end justify-between">
               <div>
                 <p className="text-[8px] font-black text-foreground/20 uppercase tracking-widest mb-1">SALDO</p>
                 <p className={`text-2xl brand-font-bold ${item.currentStock <= item.minStock ? 'text-red-500' : 'text-foreground'}`}>
@@ -124,10 +124,10 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
       </div>
 
       {isAdding && (
-        <div className="fixed inset-0 z-[500] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-premium-in">
-          <div className="w-full max-w-xl bg-card border border-foreground/10 rounded-[40px] p-10 space-y-8 shadow-2xl text-left">
+        <div className="fixed inset-0 z-[500] bg-background/95 backdrop-blur-xl flex items-center justify-center p-6 animate-premium-in">
+          <div className="w-full max-w-xl bg-card border border-border rounded-[40px] p-10 space-y-8 premium-shadow text-left">
             <div className="flex items-center justify-between">
-              <h3 className="text-2xl brand-font-bold uppercase">{editingItem ? 'Editar Insumo' : 'Novo Insumo'}</h3>
+              <h3 className="text-2xl brand-font-bold uppercase text-foreground">{editingItem ? 'Editar Insumo' : 'Novo Insumo'}</h3>
               <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="text-foreground/20 hover:text-foreground transition-colors"><X size={24}/></button>
             </div>
             

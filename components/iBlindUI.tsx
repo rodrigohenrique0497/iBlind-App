@@ -5,7 +5,7 @@ import { Check, X, Loader2, AlertCircle, Camera, Trash2, ChevronDown } from 'luc
 export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-card border border-border p-6 rounded-[24px] shadow-none transition-all hover:border-foreground/20 hover:bg-foreground/[0.02] ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
+    className={`bg-card border border-border p-6 rounded-[24px] premium-shadow transition-all hover:border-foreground/10 hover:bg-foreground/[0.01] ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
   >
     {children}
   </div>
@@ -29,9 +29,9 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
   const base = "px-8 py-5 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-300 active:scale-[0.96] flex items-center justify-center gap-3 disabled:opacity-50 select-none border";
   
   const variants = {
-    primary: "bg-foreground text-background border-foreground hover:bg-transparent hover:text-foreground shadow-lg hover:shadow-foreground/10",
-    secondary: "bg-foreground/5 text-foreground border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10",
-    danger: "bg-red-600 text-white border-red-600 hover:bg-transparent hover:text-red-500 shadow-lg shadow-red-600/10",
+    primary: "bg-foreground text-background border-foreground hover:opacity-90 shadow-lg",
+    secondary: "bg-muted text-foreground border-border hover:bg-muted/80",
+    danger: "bg-red-600 text-white border-red-600 hover:bg-red-700 shadow-lg shadow-red-600/10",
     ghost: "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-foreground/5"
   };
 
@@ -45,19 +45,18 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
 export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
   const Component = as;
   
-  // Design SaaS Premium: Fundo quase preto sólido para melhor contraste no tema dark
   const inputBaseClasses = `
-    w-full bg-[#121212] border border-white/5 
-    focus:border-white/20 focus:bg-[#181818] 
+    w-full bg-muted/30 border border-border
+    focus:border-foreground/20 focus:bg-muted/50
     text-foreground px-6 py-5 rounded-2xl 
     outline-none transition-all duration-300 
-    placeholder:text-white/10 text-xs font-semibold 
+    placeholder:text-foreground/20 text-xs font-semibold 
     appearance-none
   `;
 
   return (
     <div className="space-y-2 w-full text-left">
-      {label && <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">{label}</label>}
+      {label && <label className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.4em] ml-1">{label}</label>}
       <div className="relative">
         <Component
           {...props as any}
@@ -66,7 +65,7 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTML
           {children}
         </Component>
         {as === 'select' && (
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/20">
              <ChevronDown size={14} />
           </div>
         )}
@@ -82,7 +81,7 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   <div className="space-y-4">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
-      <div className="flex bg-foreground/5 border border-border p-1.5 rounded-2xl w-full md:w-auto">
+      <div className="flex bg-muted/50 border border-border p-1.5 rounded-2xl w-full md:w-auto">
         <button 
           type="button"
           onClick={() => onChange(false)}
@@ -141,10 +140,10 @@ export const IBImageUpload: React.FC<{
 
   return (
     <div className="space-y-4">
-      <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">{label}</label>
+      <label className="text-[9px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1">{label}</label>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img, i) => (
-          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-foreground/5 border border-border">
+          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-muted border border-border">
             <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={`Evidence ${i}`} />
             <button 
               type="button"
@@ -156,7 +155,7 @@ export const IBImageUpload: React.FC<{
           </div>
         ))}
         {images.length < max && (
-          <label className="aspect-square rounded-2xl border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-foreground/[0.05] hover:border-foreground/30 transition-all text-muted-foreground group">
+          <label className="aspect-square rounded-2xl border border-dashed border-border flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-foreground/[0.03] hover:border-foreground/20 transition-all text-muted-foreground group">
             <Camera size={24} className="group-hover:text-foreground transition-colors" />
             <span className="text-[8px] font-black uppercase tracking-[0.3em]">Capturar</span>
             <input 
@@ -179,8 +178,8 @@ export const IBBadge: React.FC<{ children: React.ReactNode; variant?: 'success' 
     success: 'bg-foreground text-background',
     warning: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
     error: 'bg-red-600 text-white',
-    neutral: 'bg-transparent text-muted-foreground border border-foreground/10',
-    primary: 'bg-foreground/10 text-foreground border border-foreground/20',
+    neutral: 'bg-transparent text-muted-foreground border border-border',
+    primary: 'bg-foreground/5 text-foreground border border-border',
   };
   return (
     <span className={`text-[8px] font-black uppercase tracking-[0.3em] px-3 py-1.5 rounded-lg ${styles[variant]}`}>

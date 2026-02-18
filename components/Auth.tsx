@@ -6,10 +6,10 @@ import { authService } from '../auth.ts';
 
 export const BrandLogo: React.FC<{ size?: string, inverted?: boolean }> = ({ size = "text-5xl", inverted = false }) => (
   <div className="flex flex-col items-center select-none group">
-    <h1 className={`${size} brand-font-bold tracking-tighter transition-colors text-white`}>
+    <h1 className={`${size} brand-font-bold tracking-tighter transition-colors text-foreground`}>
       iBlind
     </h1>
-    <p className="text-[10px] font-bold tracking-[0.4em] mt-2 text-white/20 uppercase">
+    <p className="text-[10px] font-bold tracking-[0.4em] mt-2 text-foreground/20 uppercase">
       Controle Operacional
     </p>
   </div>
@@ -66,11 +66,11 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black p-6 selection:bg-white/10 overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 selection:bg-foreground/10 overflow-hidden">
       
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-20">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-zinc-900/40 blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-foreground/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-muted/40 blur-[120px] rounded-full" />
       </div>
 
       <div className={`w-full max-w-[500px] relative z-10 transition-all duration-1000 ease-out transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
@@ -79,21 +79,21 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           <BrandLogo size="text-5xl" />
         </div>
 
-        <div className="bg-[#0A0A0A] border border-white/5 rounded-[40px] shadow-2xl p-8 md:p-12">
+        <div className="bg-card border border-border rounded-[40px] premium-shadow p-8 md:p-12">
           {success ? (
             <div className="text-center space-y-8 py-10 animate-premium-in">
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto border border-white/10">
-                <MailCheck size={32} className="text-white" />
+              <div className="w-20 h-20 bg-foreground/5 rounded-full flex items-center justify-center mx-auto border border-border">
+                <MailCheck size={32} className="text-foreground" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl brand-font-bold text-white uppercase">Verifique seu e-mail</h3>
-                <p className="text-[10px] text-white/40 uppercase tracking-widest leading-loose">
-                  Enviamos instruções de recuperação para <br/> <span className="text-white/60">{email}</span>
+                <h3 className="text-xl brand-font-bold text-foreground uppercase">Verifique seu e-mail</h3>
+                <p className="text-[10px] text-foreground/40 uppercase tracking-widest leading-loose">
+                  Enviamos instruções de recuperação para <br/> <span className="text-foreground/60">{email}</span>
                 </p>
               </div>
               <button 
                 onClick={() => { setMode('LOGIN'); setSuccess(''); }}
-                className="text-[10px] font-bold text-white/60 hover:text-white transition-all uppercase tracking-[0.3em] flex items-center gap-2 mx-auto"
+                className="text-[10px] font-bold text-foreground/60 hover:text-foreground transition-all uppercase tracking-[0.3em] flex items-center gap-2 mx-auto"
               >
                 <ArrowLeft size={14} /> Voltar ao Login
               </button>
@@ -112,9 +112,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               <div className="space-y-6">
                 {mode === 'REGISTER' && (
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">Nome</label>
+                    <label className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest ml-1">Nome</label>
                     <input 
-                      className="w-full bg-[#111111] border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all" 
+                      className="w-full bg-muted/30 border border-border text-foreground px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-foreground/20 transition-all" 
                       placeholder="Seu nome completo" 
                       value={name} 
                       onChange={e => setName(e.target.value)} 
@@ -124,9 +124,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1">E-mail</label>
+                  <label className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest ml-1">E-mail</label>
                   <input 
-                    className="w-full bg-[#111111] border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all" 
+                    className="w-full bg-muted/30 border border-border text-foreground px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-foreground/20 transition-all" 
                     placeholder="exemplo@iblind.com" 
                     type="email" 
                     value={email} 
@@ -138,10 +138,10 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 {mode !== 'FORGOT' && (
                   <div className="space-y-2">
                     <div className="flex justify-between items-center px-1">
-                      <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Senha</label>
+                      <label className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest">Senha</label>
                     </div>
                     <input 
-                      className="w-full bg-[#111111] border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all" 
+                      className="w-full bg-muted/30 border border-border text-foreground px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-foreground/20 transition-all" 
                       placeholder="••••••••" 
                       type="password"
                       value={password} 
@@ -156,7 +156,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-20 bg-white text-black rounded-3xl transition-all duration-300 active:scale-95 disabled:opacity-50 hover:bg-[#F2F2F2] flex items-center justify-center group"
+                  className="w-full h-20 bg-foreground text-background rounded-3xl transition-all duration-300 active:scale-95 disabled:opacity-50 hover:opacity-90 flex items-center justify-center group"
                 >
                   <span className="brand-font-bold text-[11px] tracking-widest flex items-center gap-3 uppercase">
                     {isLoading ? (
@@ -174,29 +174,29 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <button 
                     type="button"
                     onClick={() => setMode('FORGOT')}
-                    className="w-full py-2 text-[10px] font-bold text-white/20 hover:text-white transition-all uppercase tracking-[0.2em]"
+                    className="w-full py-2 text-[10px] font-bold text-foreground/20 hover:text-foreground transition-all uppercase tracking-[0.2em]"
                   >
                     Esqueci minha senha
                   </button>
                 )}
               </div>
 
-              <div className="pt-8 border-t border-white/5 flex flex-col items-center gap-6">
+              <div className="pt-8 border-t border-border flex flex-col items-center gap-6">
                 {mode === 'FORGOT' ? (
                   <button 
                     type="button"
                     onClick={() => { setMode('LOGIN'); setError(''); }} 
-                    className="text-[10px] font-bold text-white/40 hover:text-white transition-all uppercase tracking-widest"
+                    className="text-[10px] font-bold text-foreground/40 hover:text-foreground transition-all uppercase tracking-widest"
                   >
                     Voltar ao login
                   </button>
                 ) : (
                   <>
-                    <p className="text-[9px] font-bold text-white/10 uppercase tracking-[0.3em]">Acesso Exclusivo</p>
+                    <p className="text-[9px] font-bold text-foreground/10 uppercase tracking-[0.3em]">Acesso Exclusivo</p>
                     <button 
                       type="button"
                       onClick={() => { setMode(mode === 'LOGIN' ? 'REGISTER' : 'LOGIN'); setError(''); }} 
-                      className="text-[10px] font-bold text-white/40 hover:text-white transition-all uppercase tracking-widest"
+                      className="text-[10px] font-bold text-foreground/40 hover:text-foreground transition-all uppercase tracking-widest"
                     >
                       {mode === 'LOGIN' ? 'Criar nova conta' : 'Já possuo uma conta'}
                     </button>
@@ -207,7 +207,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           )}
         </div>
 
-        <p className="mt-12 text-center text-[9px] font-black text-white/5 uppercase tracking-[1em] select-none">
+        <p className="mt-12 text-center text-[9px] font-black text-foreground/5 uppercase tracking-[1em] select-none">
           iBlind © 2024
         </p>
       </div>
