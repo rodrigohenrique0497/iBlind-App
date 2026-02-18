@@ -24,28 +24,42 @@
               primary: 'var(--primary)',
               muted: 'var(--muted)',
               'muted-foreground': 'var(--muted-foreground)',
+              surface: '#121212',
+            },
+            borderRadius: {
+              'premium': '18px',
+              'super': '28px',
             },
             animation: {
-              'premium-in': 'premiumIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+              'premium-in': 'premiumIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+              'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            },
+            keyframes: {
+              premiumIn: {
+                '0%': { transform: 'translateY(10px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(100%)' },
+                '100%': { transform: 'translateY(0)' },
+              }
             }
           }
         }
       }
     </script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
       
       :root {
-        --background: #F2F2F7;
+        --background: #F8F8F8;
         --foreground: #000000;
         --card: #FFFFFF;
         --card-foreground: #000000;
-        --border: rgba(0,0,0,0.08);
+        --border: rgba(0,0,0,0.06);
         --primary: #000000;
-        --primary-foreground: #FFFFFF;
         --muted: #E5E5EA;
         --muted-foreground: #8E8E93;
-        --radius: 24px;
       }
 
       .dark {
@@ -53,18 +67,16 @@
         --foreground: #FFFFFF;
         --card: #0A0A0A;
         --card-foreground: #FFFFFF;
-        --border: rgba(255,255,255,0.06);
+        --border: rgba(255,255,255,0.05);
         --primary: #FFFFFF;
-        --primary-foreground: #000000;
         --muted: #1C1C1E;
         --muted-foreground: #8E8E93;
       }
 
       * {
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         -webkit-tap-highlight-color: transparent;
         font-style: normal !important;
-        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
       }
 
       body {
@@ -73,74 +85,68 @@
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         margin: 0;
+        overscroll-behavior-y: none; /* Previne o efeito de bounce do iOS no body */
       }
 
-      /* Fix Definitivo para Dropdowns Dark */
-      select, select option {
-        background-color: #0A0A0A !important;
-        color: #FFFFFF !important;
-        border-radius: 12px;
+      /* Native-feel buttons */
+      button:active {
+        transform: scale(0.97);
       }
 
-      /* Estilização da scrollbar para ser premium */
+      /* Premium Scrollbar */
       ::-webkit-scrollbar {
-        width: 5px;
+        width: 4px;
+        height: 4px;
       }
       ::-webkit-scrollbar-track {
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 20px;
       }
 
       .max-content {
-        max-width: 1440px;
+        max-width: 1200px;
         margin: 0 auto;
       }
 
       .brand-font-bold {
         font-weight: 800;
-        letter-spacing: -0.05em;
+        letter-spacing: -0.04em;
       }
 
       .no-scrollbar::-webkit-scrollbar { display: none; }
-
-      .animate-premium-in {
-        animation: premiumIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
       }
 
-      @keyframes premiumIn {
-        from { transform: translateY(10px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+      .safe-top { padding-top: env(safe-area-inset-top); }
+      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+      
+      /* Blur layers for glassmorphism */
+      .glass {
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
       }
 
-      .skeleton {
-        background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-        border-radius: 8px;
-      }
-
-      @keyframes loading {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-      }
-
-      :focus-visible {
-        outline: none;
+      select {
+        background-image: none !important;
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.45.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
     "vite": "https://esm.sh/vite@^7.3.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.97.0",
     "vite-plugin-pwa": "https://esm.sh/vite-plugin-pwa@^1.2.0",
     "workbox-precaching": "https://esm.sh/workbox-precaching@^7.4.0"
   }
