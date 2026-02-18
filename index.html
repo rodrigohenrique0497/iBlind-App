@@ -15,33 +15,29 @@
         darkMode: 'class',
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Montserrat', 'sans-serif'],
+            },
             colors: {
-              background: 'var(--background)',
-              foreground: 'var(--foreground)',
-              card: 'var(--card)',
-              'card-foreground': 'var(--card-foreground)',
-              border: 'var(--border)',
-              primary: 'var(--primary)',
-              muted: 'var(--muted)',
-              'muted-foreground': 'var(--muted-foreground)',
-              surface: '#121212',
+              background: '#000000',
+              foreground: '#FFFFFF',
+              card: '#0D0D0D',
+              border: 'rgba(255,255,255,0.06)',
+              primary: '#FFFFFF',
+              surface: '#0D0D0D',
+              'surface-lighter': '#161616',
             },
             borderRadius: {
-              'premium': '18px',
-              'super': '28px',
+              'premium': '24px',
+              'super': '32px',
             },
             animation: {
-              'premium-in': 'premiumIn 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-              'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              'premium-in': 'premiumIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
             },
             keyframes: {
               premiumIn: {
-                '0%': { transform: 'translateY(10px)', opacity: '0' },
+                '0%': { transform: 'translateY(8px)', opacity: '0' },
                 '100%': { transform: 'translateY(0)', opacity: '1' },
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(100%)' },
-                '100%': { transform: 'translateY(0)' },
               }
             }
           }
@@ -49,91 +45,37 @@
       }
     </script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
       
-      :root {
-        --background: #F8F8F8;
-        --foreground: #000000;
-        --card: #FFFFFF;
-        --card-foreground: #000000;
-        --border: rgba(0,0,0,0.06);
-        --primary: #000000;
-        --muted: #E5E5EA;
-        --muted-foreground: #8E8E93;
-      }
-
-      .dark {
-        --background: #000000;
-        --foreground: #FFFFFF;
-        --card: #0A0A0A;
-        --card-foreground: #FFFFFF;
-        --border: rgba(255,255,255,0.05);
-        --primary: #FFFFFF;
-        --muted: #1C1C1E;
-        --muted-foreground: #8E8E93;
-      }
-
-      * {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        -webkit-tap-highlight-color: transparent;
-        font-style: normal !important;
-      }
-
       body {
-        background-color: var(--background);
-        color: var(--foreground);
+        background-color: #000000;
+        color: #FFFFFF;
         -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
-        margin: 0;
-        overscroll-behavior-y: none; /* Previne o efeito de bounce do iOS no body */
-      }
-
-      /* Native-feel buttons */
-      button:active {
-        transform: scale(0.97);
-      }
-
-      /* Premium Scrollbar */
-      ::-webkit-scrollbar {
-        width: 4px;
-        height: 4px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.08);
-        border-radius: 20px;
-      }
-
-      .max-content {
-        max-width: 1200px;
-        margin: 0 auto;
+        overscroll-behavior-y: none;
+        font-family: 'Montserrat', sans-serif;
       }
 
       .brand-font-bold {
         font-weight: 800;
-        letter-spacing: -0.04em;
+        letter-spacing: -0.03em;
       }
 
-      .no-scrollbar::-webkit-scrollbar { display: none; }
-      
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+      .glass {
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        background: rgba(0, 0, 0, 0.75);
+      }
+
+      button:active {
+        transform: scale(0.98);
       }
 
       .safe-top { padding-top: env(safe-area-inset-top); }
       .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-      
-      /* Blur layers for glassmorphism */
-      .glass {
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-      }
 
+      /* Custom Checkbox/Radio styling for select */
       select {
+        appearance: none;
         background-image: none !important;
       }
     </style>
