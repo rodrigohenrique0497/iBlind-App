@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
+import { ResetPassword } from './components/ResetPassword.tsx';
 import { authService } from './auth.ts';
 import { supabase } from './supabase.ts';
 import { DashboardLayout } from './layouts/DashboardLayout.tsx';
@@ -23,6 +24,7 @@ const App = () => {
   const [view, setView] = useState<ViewType>('PAINEL');
   const [theme, setTheme] = useState<AppTheme>(() => (localStorage.getItem('iblind_v12_theme') as AppTheme) || 'DARK');
   const [isLoading, setIsLoading] = useState(true);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   
   const [tenant, setTenant] = useState<TenantConfig>(() => JSON.parse(localStorage.getItem('iblind_v12_tenant') || JSON.stringify({
     companyName: 'iBlind',
@@ -38,6 +40,35 @@ const App = () => {
   const [selectedProtocol, setSelectedProtocol] = useState<Attendance | null>(null);
   const [auditTarget, setAuditTarget] = useState<string | null>(null);
   const [auditReason, setAuditReason] = useState('');
+
+  useEffect(() => {
+    // Detecta se o usuário veio de um link de recuperação (hash no URL)
+    const handleHash = () => {
+      if (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token=')) {
+        setIsRecoveryMode(true);
+      }
+    };
+    handleHash();
+
+    // Listener para mudanças de auth (necessário para pegar a sessão após o link)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+      }
+      if (session?.user && !user) {
+        const u: User = {
+          id: session.user.id,
+          name: session.user.user_metadata.full_name || 'Operador',
+          email: session.user.email!,
+          role: 'TECNICO'
+        };
+        setUser(u);
+        authService.setSession(u);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -157,6 +188,9 @@ const App = () => {
     setAuditTarget(null);
     setAuditReason('');
   };
+
+  // Renderização da Tela de Recuperação
+  if (isRecoveryMode) return <ResetPassword />;
 
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 

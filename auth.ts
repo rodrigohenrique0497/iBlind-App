@@ -44,6 +44,18 @@ export const authService = {
     return null;
   },
 
+  sendResetEmail: async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}`,
+    });
+    if (error) throw error;
+  },
+
+  updatePassword: async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  },
+
   logout: async () => {
     await supabase.auth.signOut();
     localStorage.removeItem('iblind_current_session_v2');
