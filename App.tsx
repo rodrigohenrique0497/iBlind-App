@@ -96,7 +96,6 @@ const App = () => {
         if (invRes.data) setInventory(invRes.data.map(row => ({...row.data, id: row.id})));
         if (logRes.data) setLogs(logRes.data);
         
-        // Removido o fallback de dados fictícios (Carlos/Ana)
         if (usersRes.data) {
           setSpecialists(usersRes.data);
         } else {
@@ -201,12 +200,16 @@ const App = () => {
   const handleExcluir = async (id: string) => {
     if (!auditReason || auditReason.length < 5) return;
     
+    // Obtém o especialista responsável pelo serviço antes da exclusão
+    const service = history.find(a => a.id === id);
+    const responsibleSpecialist = service?.specialistName || 'N/A';
+    
     const log: AuditLog = {
       id: Math.random().toString(36).substr(2, 9),
       userId: user!.id,
-      userName: user!.name,
+      userName: responsibleSpecialist, // Vincula o nome do especialista responsável no log principal
       action: 'EXCLUSÃO',
-      details: `Protocolo ${id} removido. Justificativa: ${auditReason}`,
+      details: `Protocolo ${id} removido por ${user!.name}. Justificativa: ${auditReason}`,
       timestamp: new Date().toISOString(),
       targetId: id
     };
@@ -436,7 +439,7 @@ const App = () => {
                 <thead className="bg-foreground/5 border-b border-foreground/5">
                   <tr>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Data</th>
-                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Operador</th>
+                    <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Especialista</th>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Ação</th>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Detalhes</th>
                   </tr>
@@ -445,7 +448,7 @@ const App = () => {
                   {logs.map(log => (
                     <tr key={log.id} className="text-[11px] text-foreground/60">
                       <td className="px-6 py-4">{new Date(log.timestamp).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 font-bold uppercase">{log.userName.split(' ')[0]}</td>
+                      <td className="px-6 py-4 font-bold uppercase">{log.userName}</td>
                       <td className="px-6 py-4"><IBBadge variant="error">{log.action}</IBBadge></td>
                       <td className="px-6 py-4 max-w-xs truncate">{log.details}</td>
                     </tr>
