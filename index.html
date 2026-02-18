@@ -40,7 +40,7 @@
         --foreground: #000000;
         --card: #FFFFFF;
         --card-foreground: #000000;
-        --border: rgba(0,0,0,0.05);
+        --border: rgba(0,0,0,0.08);
         --primary: #000000;
         --primary-foreground: #FFFFFF;
         --muted: #E5E5EA;
@@ -53,7 +53,7 @@
         --foreground: #FFFFFF;
         --card: #0A0A0A;
         --card-foreground: #FFFFFF;
-        --border: rgba(255,255,255,0.05);
+        --border: rgba(255,255,255,0.06);
         --primary: #FFFFFF;
         --primary-foreground: #000000;
         --muted: #1C1C1E;
@@ -64,7 +64,7 @@
         font-family: 'Montserrat', sans-serif;
         -webkit-tap-highlight-color: transparent;
         font-style: normal !important;
-        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
       }
 
       body {
@@ -75,10 +75,23 @@
         margin: 0;
       }
 
-      /* Fix para fundos de Select em Dark Mode */
-      select option {
+      /* Fix Definitivo para Dropdowns Dark */
+      select, select option {
         background-color: #0A0A0A !important;
         color: #FFFFFF !important;
+        border-radius: 12px;
+      }
+
+      /* Estilização da scrollbar para ser premium */
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
       }
 
       .max-content {
@@ -114,11 +127,8 @@
         100% { background-position: -200% 0; }
       }
 
-      /* Focus Ring Global */
       :focus-visible {
         outline: none;
-        ring: 2px;
-        ring-color: rgba(255,255,255,0.3);
       }
     </style>
   <script type="importmap">

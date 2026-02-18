@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, X, Loader2, AlertCircle, Camera, Trash2 } from 'lucide-react';
+import { Check, X, Loader2, AlertCircle, Camera, Trash2, ChevronDown } from 'lucide-react';
 
 export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
@@ -44,23 +44,34 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
 
 export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
   const Component = as;
+  
+  // Retornando ao contraste original (transparente) solicitado pelo usuário
+  const inputBaseClasses = `
+    w-full bg-foreground/[0.03] border border-foreground/5 
+    focus:border-foreground/20 focus:bg-foreground/[0.05] 
+    text-foreground px-6 py-5 rounded-2xl 
+    outline-none transition-all duration-300 
+    placeholder:text-foreground/20 text-xs font-semibold 
+    appearance-none
+  `;
+
   return (
-    <div className="space-y-2 w-full">
+    <div className="space-y-2 w-full text-left">
       {label && <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-60">{label}</label>}
-      <div className="relative group">
+      <div className="relative">
         <Component
           {...props as any}
-          className={`w-full bg-foreground/[0.03] border border-foreground/5 focus:border-foreground/20 focus:bg-foreground/[0.05] text-foreground px-6 py-5 rounded-2xl outline-none transition-all placeholder:text-foreground/20 text-xs font-semibold text-left appearance-none ${className}`}
+          className={`${inputBaseClasses} ${className}`}
         >
           {children}
         </Component>
         {as === 'select' && (
           <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+             <ChevronDown size={14} />
           </div>
         )}
       </div>
-      {error && <p className="text-[9px] font-black text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
+      {error && <p className="text-[9px] font-bold text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
     </div>
   );
 };
@@ -71,18 +82,18 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   <div className="space-y-4">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
-      <div className="flex bg-foreground/[0.03] border border-foreground/5 p-1 rounded-2xl w-full md:w-auto">
+      <div className="flex bg-foreground/5 border border-border p-1.5 rounded-2xl w-full md:w-auto">
         <button 
           type="button"
           onClick={() => onChange(false)}
-          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
         >
           ÍNTEGRO
         </button>
         <button 
           type="button"
           onClick={() => onChange(true)}
-          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${value ? 'bg-red-600 text-white shadow-md' : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/5'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${value ? 'bg-red-600 text-white shadow-md' : 'text-muted-foreground hover:text-red-500'}`}
         >
           AVARIA
         </button>
