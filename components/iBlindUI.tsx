@@ -1,24 +1,24 @@
+
 import React from 'react';
-import { Loader2, ChevronDown, Camera, Trash2 } from 'lucide-react';
+import { Check, X, Loader2, AlertCircle, Camera, Trash2, ChevronDown } from 'lucide-react';
 
 export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-surface border border-white/[0.04] p-7 rounded-premium transition-all duration-300 ${onClick ? 'cursor-pointer hover:bg-surface-hover hover:border-white/[0.1] active:scale-[0.98]' : ''} ${className}`}
+    className={`bg-card border border-border p-6 rounded-[24px] shadow-none transition-all hover:border-foreground/20 hover:bg-foreground/[0.02] ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
   >
     {children}
   </div>
 );
 
-export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-white' }) => (
-  <IBCard className="flex items-center gap-6 p-6">
-    <div className={`w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center ${color} opacity-80`}>
-      {/* Fix: Check if icon is a valid element and cast to React.ReactElement<any> to allow adding 'size' prop via cloneElement */}
-      {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 20 }) : icon}
+export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-primary' }) => (
+  <IBCard className="flex items-center gap-6 p-8 relative overflow-hidden group">
+    <div className={`w-14 h-14 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-foreground group-hover:text-background`}>
+      {icon}
     </div>
-    <div className="text-left">
-      <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-1">{title}</p>
-      <p className="text-2xl font-bold tracking-tighter text-white leading-none">{value}</p>
+    <div>
+      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40">{title}</p>
+      <p className="text-3xl brand-font-bold mt-1 tracking-tighter text-foreground">{value}</p>
     </div>
   </IBCard>
 );
@@ -26,13 +26,13 @@ export const IBlindStatCard: React.FC<{ title: string; value: string | number; i
 export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' | 'ghost', isLoading?: boolean }> = ({ 
   children, variant = 'primary', isLoading, className = '', ...props 
 }) => {
-  const base = "h-14 px-8 rounded-premium font-bold text-[11px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 select-none cursor-pointer";
+  const base = "px-8 py-5 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-300 active:scale-[0.96] flex items-center justify-center gap-3 disabled:opacity-50 select-none border";
   
   const variants = {
-    primary: "bg-white text-black border border-white hover:bg-white/90 active:scale-[0.97] shadow-lg",
-    secondary: "bg-white/[0.04] text-white border border-white/[0.05] hover:border-white/[0.15] active:bg-white/[0.08] active:scale-[0.97]",
-    danger: "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white active:scale-[0.97]",
-    ghost: "bg-transparent text-white/40 hover:text-white hover:bg-white/[0.04] active:scale-[0.97]"
+    primary: "bg-foreground text-background border-foreground hover:bg-transparent hover:text-foreground shadow-lg hover:shadow-foreground/10",
+    secondary: "bg-foreground/5 text-foreground border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10",
+    danger: "bg-red-600 text-white border-red-600 hover:bg-transparent hover:text-red-500 shadow-lg shadow-red-600/10",
+    ghost: "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-foreground/5"
   };
 
   return (
@@ -45,18 +45,19 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
 export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
   const Component = as;
   
+  // Design SaaS Premium: Fundo quase preto sólido para melhor contraste no tema dark
   const inputBaseClasses = `
-    w-full h-15 bg-[#0F0F11] border border-white/[0.06] 
-    focus:border-white/[0.2] focus:bg-[#141416] 
-    text-white px-6 rounded-premium 
+    w-full bg-[#121212] border border-white/5 
+    focus:border-white/20 focus:bg-[#181818] 
+    text-foreground px-6 py-5 rounded-2xl 
     outline-none transition-all duration-300 
-    placeholder:text-white/10 text-sm font-medium
-    appearance-none input-glow
+    placeholder:text-white/10 text-xs font-semibold 
+    appearance-none
   `;
 
   return (
-    <div className="space-y-3 w-full text-left">
-      {label && <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] ml-2">{label}</label>}
+    <div className="space-y-2 w-full text-left">
+      {label && <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">{label}</label>}
       <div className="relative">
         <Component
           {...props as any}
@@ -66,11 +67,11 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTML
         </Component>
         {as === 'select' && (
           <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
-             <ChevronDown size={16} />
+             <ChevronDown size={14} />
           </div>
         )}
       </div>
-      {error && <p className="text-[10px] font-bold text-red-500 uppercase ml-2 tracking-wide">{error}</p>}
+      {error && <p className="text-[9px] font-bold text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
     </div>
   );
 };
@@ -79,33 +80,33 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   label, value, onChange, notes, onNotesChange 
 }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between gap-6 p-2 bg-surface rounded-premium border border-white/[0.04] transition-all hover:border-white/[0.08]">
-      <span className="text-[11px] font-bold text-white/80 uppercase tracking-[0.1em] ml-4">{label}</span>
-      <div className="flex bg-[#0F0F11] p-1 rounded-2xl border border-white/[0.05]">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
+      <div className="flex bg-foreground/5 border border-border p-1.5 rounded-2xl w-full md:w-auto">
         <button 
           type="button"
           onClick={() => onChange(false)}
-          className={`h-11 px-8 rounded-xl text-[10px] font-bold tracking-widest transition-all ${!value ? 'bg-white text-black shadow-lg' : 'text-white/20 hover:text-white'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
         >
           ÍNTEGRO
         </button>
         <button 
           type="button"
           onClick={() => onChange(true)}
-          className={`h-11 px-8 rounded-xl text-[10px] font-bold tracking-widest transition-all ${value ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'text-white/20 hover:text-red-400'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${value ? 'bg-red-600 text-white shadow-md' : 'text-muted-foreground hover:text-red-500'}`}
         >
           AVARIA
         </button>
       </div>
     </div>
     {value && onNotesChange && (
-      <div className="animate-subtle-in px-2">
+      <div className="animate-premium-in">
         <IBInput 
-          label="Nota de Vistoria" 
-          placeholder="Especifique o dano..."
+          label="Descrição da Avaria" 
+          placeholder="Especifique os danos encontrados..."
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          className="border-red-500/10"
+          className="border-red-500/20 focus:border-red-500/40"
         />
       </div>
     )}
@@ -134,27 +135,38 @@ export const IBImageUpload: React.FC<{
     e.target.value = '';
   };
 
+  const removeImage = (index: number) => {
+    onChange(images.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="space-y-4">
-      <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.3em] ml-2">{label}</label>
-      <div className="grid grid-cols-4 gap-4">
+      <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">{label}</label>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img, i) => (
-          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-surface border border-white/[0.05]">
-            <img src={img} className="w-full h-full object-cover grayscale brightness-90 group-hover:grayscale-0 transition-all duration-700" alt={`Evidence ${i}`} />
+          <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-foreground/5 border border-border">
+            <img src={img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={`Evidence ${i}`} />
             <button 
               type="button"
-              onClick={() => onChange(images.filter((_, idx) => idx !== i))}
-              className="absolute inset-0 bg-red-600/90 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => removeImage(i)}
+              className="absolute inset-0 bg-red-600/80 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash2 size={20} />
             </button>
           </div>
         ))}
         {images.length < max && (
-          <label className="aspect-square rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.04] hover:border-white/30 transition-all text-white/10 hover:text-white active:scale-[0.95]">
-            <Camera size={24} />
-            <span className="text-[9px] font-bold uppercase tracking-widest">Adicionar</span>
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} multiple />
+          <label className="aspect-square rounded-2xl border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-foreground/[0.05] hover:border-foreground/30 transition-all text-muted-foreground group">
+            <Camera size={24} className="group-hover:text-foreground transition-colors" />
+            <span className="text-[8px] font-black uppercase tracking-[0.3em]">Capturar</span>
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              className="hidden" 
+              onChange={handleFile} 
+              multiple 
+            />
           </label>
         )}
       </div>
@@ -164,15 +176,19 @@ export const IBImageUpload: React.FC<{
 
 export const IBBadge: React.FC<{ children: React.ReactNode; variant?: 'success' | 'warning' | 'error' | 'neutral' | 'primary' }> = ({ children, variant = 'neutral' }) => {
   const styles = {
-    success: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    error: 'bg-red-500/10 text-red-400 border border-red-500/20',
-    neutral: 'bg-white/5 text-white/40 border border-white/5',
-    primary: 'bg-white text-black font-bold',
+    success: 'bg-foreground text-background',
+    warning: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
+    error: 'bg-red-600 text-white',
+    neutral: 'bg-transparent text-muted-foreground border border-foreground/10',
+    primary: 'bg-foreground/10 text-foreground border border-foreground/20',
   };
   return (
-    <span className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg ${styles[variant]}`}>
+    <span className={`text-[8px] font-black uppercase tracking-[0.3em] px-3 py-1.5 rounded-lg ${styles[variant]}`}>
       {children}
     </span>
   );
 };
+
+export const IBSkeleton: React.FC<{ className?: string }> = ({ className = "h-4 w-full" }) => (
+  <div className={`skeleton ${className} opacity-5`} />
+);
