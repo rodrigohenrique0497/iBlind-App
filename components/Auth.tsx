@@ -139,15 +139,6 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center px-1">
                       <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Senha</label>
-                      {mode === 'LOGIN' && (
-                        <button 
-                          type="button"
-                          onClick={() => setMode('FORGOT')}
-                          className="text-[9px] font-bold text-white/20 hover:text-white transition-all uppercase tracking-widest"
-                        >
-                          Esqueci a senha
-                        </button>
-                      )}
                     </div>
                     <input 
                       className="w-full bg-[#111111] border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-white/20 transition-all" 
@@ -161,22 +152,34 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 )}
               </div>
 
-              <button 
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-20 bg-white text-black rounded-3xl transition-all duration-300 active:scale-95 disabled:opacity-50 hover:bg-[#F2F2F2] flex items-center justify-center group"
-              >
-                <span className="brand-font-bold text-[11px] tracking-widest flex items-center gap-3 uppercase">
-                  {isLoading ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <>
-                      {mode === 'LOGIN' ? 'Acessar Plataforma' : mode === 'REGISTER' ? 'Criar Conta' : 'Recuperar Acesso'}
-                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                    </>
-                  )}
-                </span>
-              </button>
+              <div className="space-y-4">
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-20 bg-white text-black rounded-3xl transition-all duration-300 active:scale-95 disabled:opacity-50 hover:bg-[#F2F2F2] flex items-center justify-center group"
+                >
+                  <span className="brand-font-bold text-[11px] tracking-widest flex items-center gap-3 uppercase">
+                    {isLoading ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <>
+                        {mode === 'LOGIN' ? 'Acessar Plataforma' : mode === 'REGISTER' ? 'Criar Conta' : 'Recuperar Acesso'}
+                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </span>
+                </button>
+
+                {mode === 'LOGIN' && (
+                  <button 
+                    type="button"
+                    onClick={() => setMode('FORGOT')}
+                    className="w-full py-2 text-[10px] font-bold text-white/20 hover:text-white transition-all uppercase tracking-[0.2em]"
+                  >
+                    Esqueci minha senha
+                  </button>
+                )}
+              </div>
 
               <div className="pt-8 border-t border-white/5 flex flex-col items-center gap-6">
                 {mode === 'FORGOT' ? (
