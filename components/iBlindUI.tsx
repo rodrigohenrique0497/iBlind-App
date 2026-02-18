@@ -5,7 +5,7 @@ import { Check, X, Loader2, AlertCircle, Camera, Trash2 } from 'lucide-react';
 export const IBCard: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className = '', onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-card border border-border p-6 rounded-[24px] shadow-none transition-all hover:border-foreground/10 ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
+    className={`bg-card border border-border p-6 rounded-[24px] shadow-none transition-all hover:border-foreground/20 hover:bg-foreground/[0.02] ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''} ${className}`}
   >
     {children}
   </div>
@@ -26,11 +26,11 @@ export const IBlindStatCard: React.FC<{ title: string; value: string | number; i
 export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' | 'ghost', isLoading?: boolean }> = ({ 
   children, variant = 'primary', isLoading, className = '', ...props 
 }) => {
-  const base = "px-8 py-5 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-500 active:scale-[0.96] flex items-center justify-center gap-3 disabled:opacity-50 select-none border";
+  const base = "px-8 py-5 rounded-2xl font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-300 active:scale-[0.96] flex items-center justify-center gap-3 disabled:opacity-50 select-none border";
   
   const variants = {
-    primary: "bg-foreground text-background border-foreground hover:bg-transparent hover:text-foreground shadow-lg",
-    secondary: "bg-transparent text-foreground border-foreground/10 hover:border-foreground hover:bg-foreground hover:text-background",
+    primary: "bg-foreground text-background border-foreground hover:bg-transparent hover:text-foreground shadow-lg hover:shadow-foreground/10",
+    secondary: "bg-foreground/5 text-foreground border-foreground/10 hover:border-foreground/30 hover:bg-foreground/10",
     danger: "bg-red-600 text-white border-red-600 hover:bg-transparent hover:text-red-500 shadow-lg shadow-red-600/10",
     ghost: "bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-foreground/5"
   };
@@ -42,16 +42,28 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
   );
 };
 
-export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label?: string; error?: string }> = ({ label, error, className = '', ...props }) => (
-  <div className="space-y-2 w-full">
-    {label && <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] ml-1 opacity-40">{label}</label>}
-    <input
-      {...props}
-      className={`w-full bg-background border border-foreground/10 focus:border-foreground/20 text-foreground px-6 py-5 rounded-2xl outline-none transition-all placeholder:text-foreground/5 text-xs font-medium text-left ${className}`}
-    />
-    {error && <p className="text-[9px] font-black text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
-  </div>
-);
+export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
+  const Component = as;
+  return (
+    <div className="space-y-2 w-full">
+      {label && <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-60">{label}</label>}
+      <div className="relative group">
+        <Component
+          {...props as any}
+          className={`w-full bg-foreground/[0.03] border border-foreground/5 focus:border-foreground/20 focus:bg-foreground/[0.05] text-foreground px-6 py-5 rounded-2xl outline-none transition-all placeholder:text-foreground/20 text-xs font-semibold text-left appearance-none ${className}`}
+        >
+          {children}
+        </Component>
+        {as === 'select' && (
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        )}
+      </div>
+      {error && <p className="text-[9px] font-black text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
+    </div>
+  );
+};
 
 export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: (v: boolean) => void; notes?: string; onNotesChange?: (n: string) => void }> = ({ 
   label, value, onChange, notes, onNotesChange 
@@ -59,18 +71,18 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   <div className="space-y-4">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
-      <div className="flex bg-foreground/5 border border-border p-1 rounded-2xl w-full md:w-auto">
+      <div className="flex bg-foreground/[0.03] border border-foreground/5 p-1 rounded-2xl w-full md:w-auto">
         <button 
           type="button"
           onClick={() => onChange(false)}
-          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${!value ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'}`}
         >
-          ÍNTREGRO
+          ÍNTEGRO
         </button>
         <button 
           type="button"
           onClick={() => onChange(true)}
-          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${value ? 'bg-red-600 text-white' : 'text-muted-foreground hover:text-red-500'}`}
+          className={`px-8 py-4 rounded-xl text-[9px] font-black tracking-widest transition-all ${value ? 'bg-red-600 text-white shadow-md' : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/5'}`}
         >
           AVARIA
         </button>
@@ -83,7 +95,7 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
           placeholder="Especifique os danos encontrados..."
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          className="border-red-500/20"
+          className="border-red-500/20 focus:border-red-500/40"
         />
       </div>
     )}
@@ -118,7 +130,7 @@ export const IBImageUpload: React.FC<{
 
   return (
     <div className="space-y-4">
-      <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-40">{label}</label>
+      <label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] ml-1 opacity-60">{label}</label>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img, i) => (
           <div key={i} className="relative aspect-square rounded-2xl overflow-hidden group bg-foreground/5 border border-border">
@@ -133,7 +145,7 @@ export const IBImageUpload: React.FC<{
           </div>
         ))}
         {images.length < max && (
-          <label className="aspect-square rounded-2xl border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-foreground/5 hover:border-foreground/30 transition-all text-muted-foreground group">
+          <label className="aspect-square rounded-2xl border border-dashed border-foreground/10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-foreground/[0.05] hover:border-foreground/30 transition-all text-muted-foreground group">
             <Camera size={24} className="group-hover:text-foreground transition-colors" />
             <span className="text-[8px] font-black uppercase tracking-[0.3em]">Capturar</span>
             <input 

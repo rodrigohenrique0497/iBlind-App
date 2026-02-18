@@ -67,33 +67,31 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
       </header>
 
       <div className="flex flex-col lg:flex-row gap-4">
-        <div className="relative group flex-1">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={20} />
-          <input 
-            className="w-full bg-white/5 border border-white/5 focus:border-white/20 text-white pl-16 pr-6 py-5 rounded-2xl text-xs font-semibold outline-none transition-all placeholder:text-white/10"
-            placeholder="Pesquisar itens..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+        <div className="flex-1">
+          <IBInput 
+             placeholder="Pesquisar itens..."
+             value={searchTerm}
+             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex gap-4">
-          <select 
-            className="bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:border-white/20 min-w-[200px]"
+        <div className="flex gap-4 min-w-[240px]">
+          <IBInput 
+            as="select"
             value={filterSpec}
             onChange={(e) => setFilterSpec(e.target.value)}
           >
             <option value="ALL">TODOS ESPECIALISTAS</option>
             <option value="">ESTOQUE CENTRAL</option>
-            {specialists.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+            {specialists.map(s => <option key={s.id} value={s.id}>{s.name.toUpperCase()}</option>)}
+          </IBInput>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredItems.map(item => (
-          <IBCard key={item.id} className="relative group flex flex-col h-full hover:border-white/10 text-left">
+          <IBCard key={item.id} className="relative group flex flex-col h-full text-left">
             <div className="flex justify-between items-start mb-6">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.currentStock <= item.minStock ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white'}`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${item.currentStock <= item.minStock ? 'bg-red-500/10 text-red-500' : 'bg-foreground/5 text-foreground'}`}>
                 {item.category === 'CAPA' ? <Box size={24} /> : <Smartphone size={24} />}
               </div>
               <IBBadge variant={item.category === 'PELICULA' ? 'primary' : 'success'}>
@@ -103,17 +101,17 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
 
             <div className="flex-1 space-y-1">
               <h4 className="brand-font-bold text-lg leading-tight uppercase">{item.brand} {item.model}</h4>
-              <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">{item.material} • {item.type}</p>
-              <div className="flex items-center gap-2 mt-4 text-white/20">
+              <p className="text-[9px] font-bold text-foreground/30 uppercase tracking-widest">{item.material} • {item.type}</p>
+              <div className="flex items-center gap-2 mt-4 text-foreground/20">
                 <Users size={12} />
                 <span className="text-[9px] font-black uppercase tracking-tighter truncate">{item.assignedSpecialistName || 'ESTOQUE CENTRAL'}</span>
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/5 flex items-end justify-between">
+            <div className="mt-8 pt-6 border-t border-foreground/5 flex items-end justify-between">
               <div>
-                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">SALDO</p>
-                <p className={`text-2xl brand-font-bold ${item.currentStock <= item.minStock ? 'text-red-500' : 'text-white'}`}>
+                <p className="text-[8px] font-black text-foreground/20 uppercase tracking-widest mb-1">SALDO</p>
+                <p className={`text-2xl brand-font-bold ${item.currentStock <= item.minStock ? 'text-red-500' : 'text-foreground'}`}>
                   {item.currentStock} <span className="text-[10px] opacity-20">UN</span>
                 </p>
               </div>
@@ -127,38 +125,34 @@ export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUp
 
       {isAdding && (
         <div className="fixed inset-0 z-[500] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 animate-premium-in">
-          <div className="w-full max-w-xl bg-[#0A0A0A] border border-white/10 rounded-[40px] p-10 space-y-8 shadow-2xl text-left">
+          <div className="w-full max-w-xl bg-card border border-foreground/10 rounded-[40px] p-10 space-y-8 shadow-2xl text-left">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl brand-font-bold uppercase">{editingItem ? 'Editar Insumo' : 'Novo Insumo'}</h3>
-              <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="text-white/20 hover:text-white transition-colors"><X size={24}/></button>
+              <button onClick={() => { setIsAdding(false); setEditingItem(null); }} className="text-foreground/20 hover:text-foreground transition-colors"><X size={24}/></button>
             </div>
             
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">Especialista Alocado</label>
-                <select 
-                  className="w-full bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-semibold outline-none focus:border-white/20"
-                  value={formData.assignedSpecialistId}
-                  onChange={e => setFormData({...formData, assignedSpecialistId: e.target.value})}
-                >
-                  <option value="">ESTOQUE CENTRAL (ADMIN)</option>
-                  {specialists.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
-              </div>
+              <IBInput 
+                as="select"
+                label="Especialista Alocado"
+                value={formData.assignedSpecialistId}
+                onChange={e => setFormData({...formData, assignedSpecialistId: e.target.value})}
+              >
+                <option value="">ESTOQUE CENTRAL (ADMIN)</option>
+                {specialists.map(s => <option key={s.id} value={s.id}>{s.name.toUpperCase()}</option>)}
+              </IBInput>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">Categoria</label>
-                  <select 
-                    className="w-full bg-white/5 border border-white/5 text-white px-6 py-5 rounded-2xl text-xs font-semibold outline-none focus:border-white/20"
-                    value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value as any})}
-                  >
-                    <option value="PELICULA">PELÍCULA</option>
-                    <option value="CAPA">CAPA</option>
-                    <option value="ACESSORIO">ACESSÓRIO</option>
-                  </select>
-                </div>
+                <IBInput 
+                  as="select"
+                  label="Categoria"
+                  value={formData.category}
+                  onChange={e => setFormData({...formData, category: e.target.value as any})}
+                >
+                  <option value="PELICULA">PELÍCULA</option>
+                  <option value="CAPA">CAPA</option>
+                  <option value="ACESSORIO">ACESSÓRIO</option>
+                </IBInput>
                 <IBInput label="Marca" placeholder="Ex: Apple" value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} />
               </div>
 

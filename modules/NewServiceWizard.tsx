@@ -96,15 +96,15 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
   const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col h-full overflow-hidden z-[500] animate-premium-in">
-      <header className="h-24 border-b border-white/5 bg-black/90 backdrop-blur-2xl flex items-center justify-between px-8 shrink-0 relative z-10">
-        <button onClick={back} className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl text-white/40 hover:text-white transition-all active:scale-90 border border-white/5">
+    <div className="fixed inset-0 bg-background flex flex-col h-full overflow-hidden z-[500] animate-premium-in">
+      <header className="h-24 border-b border-foreground/5 bg-background/90 backdrop-blur-2xl flex items-center justify-between px-8 shrink-0 relative z-10">
+        <button onClick={back} className="w-12 h-12 flex items-center justify-center bg-foreground/5 rounded-2xl text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-all active:scale-90 border border-foreground/5">
           <ArrowLeft size={20}/>
         </button>
         
-        <div className="flex gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+        <div className="flex gap-3 px-4 py-2 bg-foreground/5 rounded-full border border-foreground/5">
           {STEPS.map((s, i) => (
-            <div key={s.id} className={`h-1.5 rounded-full transition-all duration-700 ${i <= step ? 'w-10 bg-white' : 'w-2 bg-white/10'}`} />
+            <div key={s.id} className={`h-1.5 rounded-full transition-all duration-700 ${i <= step ? 'w-10 bg-foreground' : 'w-2 bg-foreground/10'}`} />
           ))}
         </div>
 
@@ -117,21 +117,21 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
         <div className="max-w-xl mx-auto px-6 pt-20 pb-40 space-y-16">
           <div className="space-y-4 text-center md:text-left">
             <IBBadge variant="primary">MODALIDADE: {STEPS[step].label}</IBBadge>
-            <h1 className="text-4xl brand-font-bold tracking-tighter text-white uppercase leading-none">Novo Atendimento</h1>
-            <p className="text-[10px] font-black text-white/20 tracking-[0.5em] uppercase">Etapa {step + 1} de {STEPS.length}</p>
+            <h1 className="text-4xl brand-font-bold tracking-tighter text-foreground uppercase leading-none">Novo Atendimento</h1>
+            <p className="text-[10px] font-black text-foreground/20 tracking-[0.5em] uppercase">Etapa {step + 1} de {STEPS.length}</p>
           </div>
 
           {step === 0 && (
             <div className="space-y-10 animate-premium-in">
               <div className="grid gap-8">
                 <div className="space-y-4 text-left">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] ml-1">Especialista Responsável</label>
+                  <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1">Especialista Responsável</label>
                   <div className="grid grid-cols-1 gap-3">
                     {specialists.map(spec => (
                       <button 
                         key={spec.id}
                         onClick={() => setData({...data, specialistId: spec.id, specialistName: spec.name})}
-                        className={`w-full p-6 rounded-2xl flex items-center justify-between border transition-all ${data.specialistId === spec.id ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5 hover:border-white/10'}`}
+                        className={`w-full p-6 rounded-2xl flex items-center justify-between border transition-all duration-300 ${data.specialistId === spec.id ? 'bg-foreground text-background border-foreground shadow-lg' : 'bg-foreground/5 text-foreground/40 border-foreground/5 hover:border-foreground/20 hover:bg-foreground/[0.07]'}`}
                       >
                         <div className="flex items-center gap-4">
                           <Users size={18} />
@@ -150,7 +150,7 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
               </div>
 
               <div className="pt-6">
-                <IBCard className="border-dashed bg-white/[0.01] hover:bg-white/[0.03] transition-colors p-8">
+                <IBCard className="border-dashed bg-foreground/[0.01] hover:bg-foreground/[0.03] transition-colors p-8">
                   <IBImageUpload label="EVIDÊNCIAS DO ESTADO INICIAL" images={data.photos || []} onChange={(imgs) => setData({...data, photos: imgs})} max={3} />
                 </IBCard>
               </div>
@@ -164,7 +164,7 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
                 <IBBinaryCheck label="ESTADO DA TRASEIRA (VIDRO)" value={data.state!.traseira.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, hasDamage: v}}})} notes={data.state!.traseira.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, notes: n}}})} />
                 <IBBinaryCheck label="LENTES E SENSORES" value={data.state!.cameras.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, hasDamage: v}}})} notes={data.state!.cameras.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, notes: n}}})} />
               </div>
-              <div className="pt-8 border-t border-white/5">
+              <div className="pt-8 border-t border-foreground/5">
                 <IBInput label="NÚMERO DE SÉRIE / IMEI" placeholder="Digite o identificador único" value={data.deviceIMEI} onChange={e => setData({...data, deviceIMEI: e.target.value})} />
               </div>
             </div>
@@ -173,12 +173,12 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
           {step === 2 && (
             <div className="space-y-12 animate-premium-in">
               <div className="space-y-6">
-                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] ml-1 block">TIPO DE COBERTURA</label>
+                <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1 block">TIPO DE COBERTURA</label>
                 <div className="grid grid-cols-1 gap-4">
                   {(['FULL', 'SCREEN', 'BACK'] as ServiceCoverage[]).map((cov) => (
-                    <button key={cov} onClick={() => setData({...data, coverage: cov})} className={`w-full p-8 rounded-3xl flex items-center justify-between border transition-all duration-500 group ${data.coverage === cov ? 'bg-white text-black border-white scale-[1.03] z-20' : 'bg-white/5 text-white/40 border-white/5 hover:border-white/10 hover:bg-white/10'}`}>
+                    <button key={cov} onClick={() => setData({...data, coverage: cov})} className={`w-full p-8 rounded-3xl flex items-center justify-between border transition-all duration-500 group ${data.coverage === cov ? 'bg-foreground text-background border-foreground scale-[1.02] shadow-xl z-20' : 'bg-foreground/5 text-foreground/40 border-foreground/5 hover:border-foreground/20 hover:bg-foreground/[0.07]'}`}>
                       <div className="flex items-center gap-6">
-                        <div className={`p-4 rounded-2xl transition-colors ${data.coverage === cov ? 'bg-black/5' : 'bg-white/5 group-hover:bg-white/10'}`}>
+                        <div className={`p-4 rounded-2xl transition-colors ${data.coverage === cov ? 'bg-background/10' : 'bg-foreground/5 group-hover:bg-foreground/10'}`}>
                           {cov === 'FULL' && <Shield size={28} />}
                           {cov === 'SCREEN' && <Smartphone size={28} />}
                           {cov === 'BACK' && <Layers size={28} />}
@@ -192,12 +192,12 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
                   ))}
                 </div>
               </div>
-              <div className="space-y-10 pt-10 border-t border-white/5">
+              <div className="space-y-10 pt-10 border-t border-foreground/5">
                 <div className="relative group text-left">
-                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] ml-1 mb-4 block">INVESTIMENTO BLINDAGEM</label>
+                   <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1 mb-4 block">INVESTIMENTO BLINDAGEM</label>
                    <div className="flex items-baseline gap-4">
-                     <span className="text-2xl font-black text-white/20">R$</span>
-                     <input type="number" placeholder="0.00" className={`w-full bg-transparent text-6xl font-black outline-none border-b-2 py-4 transition-all tracking-tighter ${errors.valueBlindagem ? 'border-red-500' : 'border-white/10 focus:border-white'}`} value={data.valueBlindagem || ''} onChange={(e) => handleNumericInput('valueBlindagem', e.target.value)} />
+                     <span className="text-2xl font-black text-foreground/20">R$</span>
+                     <input type="number" placeholder="0.00" className={`w-full bg-transparent text-6xl font-black outline-none border-b-2 py-4 transition-all tracking-tighter ${errors.valueBlindagem ? 'border-red-500' : 'border-foreground/10 focus:border-foreground'}`} value={data.valueBlindagem || ''} onChange={(e) => handleNumericInput('valueBlindagem', e.target.value)} />
                    </div>
                 </div>
                 <div className="grid grid-cols-2 gap-8 text-left">
@@ -206,10 +206,10 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
                 </div>
               </div>
               <div className="space-y-6 text-left">
-                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] ml-1 block">FORMA DE ACERTO</label>
+                <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1 block">FORMA DE ACERTO</label>
                 <div className="grid grid-cols-2 gap-4">
                   {(['PIX', 'CREDITO', 'DEBITO', 'DINHEIRO'] as PaymentMethod[]).map(method => (
-                    <button key={method} onClick={() => setData({...data, paymentMethod: method})} className={`py-6 rounded-2xl border text-[11px] font-black tracking-widest uppercase transition-all duration-300 ${data.paymentMethod === method ? 'bg-white text-black border-white' : 'bg-white/5 text-white/30 border-white/5 hover:bg-white/10'}`}>
+                    <button key={method} onClick={() => setData({...data, paymentMethod: method})} className={`py-6 rounded-2xl border text-[11px] font-black tracking-widest uppercase transition-all duration-300 ${data.paymentMethod === method ? 'bg-foreground text-background border-foreground shadow-md' : 'bg-foreground/5 text-foreground/30 border-foreground/5 hover:bg-foreground/10 hover:border-foreground/20'}`}>
                       {method}
                     </button>
                   ))}
@@ -221,21 +221,21 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
           {step === 3 && (
             <div className="space-y-12 animate-premium-in">
               <div className="space-y-6 text-left">
-                <div className="flex items-center gap-3 text-white/30 mb-2">
+                <div className="flex items-center gap-3 text-foreground/30 mb-2">
                   <PenTool size={16} />
                   <span className="text-[10px] font-black uppercase tracking-[0.4em]">VALORIZAÇÃO DO ACORDO</span>
                 </div>
-                <p className="text-xs font-medium text-white/40 leading-relaxed uppercase tracking-wider bg-white/5 p-6 rounded-2xl border border-white/5">Ao assinar, o cliente confirma a vistoria realizada e aceita os termos de garantia vitalícia da blindagem iBlind.</p>
-                <div className="bg-[#0A0A0A] border border-white/10 rounded-[48px] p-4 shadow-2xl">
+                <p className="text-xs font-medium text-foreground/40 leading-relaxed uppercase tracking-wider bg-foreground/5 p-6 rounded-2xl border border-foreground/5">Ao assinar, o cliente confirma a vistoria realizada e aceita os termos de garantia vitalícia da blindagem iBlind.</p>
+                <div className="bg-card border border-foreground/10 rounded-[48px] p-4 shadow-2xl">
                   <SignaturePad onSave={sig => setData({...data, clientSignature: sig})} onClear={() => setData({...data, clientSignature: ''})} />
                 </div>
               </div>
-              <div className="p-10 bg-white/5 border border-white/5 rounded-[40px] flex justify-between items-center">
+              <div className="p-10 bg-foreground/5 border border-foreground/5 rounded-[40px] flex justify-between items-center">
                   <div className="space-y-1 text-left">
-                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] block">TOTAL FINAL</span>
-                    <span className="text-4xl font-black text-white tracking-tighter">{formatCurrency(totalCalculated)}</span>
+                    <span className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.5em] block">TOTAL FINAL</span>
+                    <span className="text-4xl font-black text-foreground tracking-tighter">{formatCurrency(totalCalculated)}</span>
                   </div>
-                  <div className={`p-4 rounded-full ${data.clientSignature ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/20'}`}>
+                  <div className={`p-4 rounded-full transition-colors ${data.clientSignature ? 'bg-emerald-500 text-white' : 'bg-foreground/10 text-foreground/20'}`}>
                     <CheckCircle size={32} />
                   </div>
               </div>
@@ -244,7 +244,7 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
         </div>
       </main>
 
-      <footer className="p-8 bg-black/90 backdrop-blur-3xl border-t border-white/5 sticky bottom-0 z-10">
+      <footer className="p-8 bg-background/90 backdrop-blur-3xl border-t border-foreground/5 sticky bottom-0 z-10">
         <div className="max-w-xl mx-auto flex gap-4">
           <IBButton onClick={next} className="flex-1 h-20 rounded-[32px] text-sm" disabled={step === 3 && !data.clientSignature}>
             {step === 3 ? 'FINALIZAR ATENDIMENTO' : 'PRÓXIMO PASSO'}

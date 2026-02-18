@@ -24,6 +24,9 @@
               primary: 'var(--primary)',
               muted: 'var(--muted)',
               'muted-foreground': 'var(--muted-foreground)',
+            },
+            animation: {
+              'premium-in': 'premiumIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             }
           }
         }
@@ -61,7 +64,7 @@
         font-family: 'Montserrat', sans-serif;
         -webkit-tap-highlight-color: transparent;
         font-style: normal !important;
-        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
       }
 
       body {
@@ -70,6 +73,12 @@
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         margin: 0;
+      }
+
+      /* Fix para fundos de Select em Dark Mode */
+      select option {
+        background-color: #0A0A0A !important;
+        color: #FFFFFF !important;
       }
 
       .max-content {
@@ -103,6 +112,13 @@
       @keyframes loading {
         0% { background-position: 200% 0; }
         100% { background-position: -200% 0; }
+      }
+
+      /* Focus Ring Global */
+      :focus-visible {
+        outline: none;
+        ring: 2px;
+        ring-color: rgba(255,255,255,0.3);
       }
     </style>
   <script type="importmap">
