@@ -13,11 +13,11 @@ export const IBCard: React.FC<{ children: React.ReactNode; className?: string; o
 
 export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-primary' }) => (
   <IBCard className="flex items-center gap-6 p-8 relative overflow-hidden group">
-    <div className={`w-14 h-14 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-foreground group-hover:text-background`}>
+    <div className={`w-14 h-14 rounded-2xl bg-muted border border-border flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-foreground group-hover:text-background`}>
       {icon}
     </div>
     <div>
-      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40">{title}</p>
+      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-60">{title}</p>
       <p className="text-3xl brand-font-bold mt-1 tracking-tighter text-foreground">{value}</p>
     </div>
   </IBCard>
@@ -45,12 +45,13 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
 export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
   const Component = as;
   
+  // Ajuste fino: bg-muted em vez de bg-muted/30 para garantir preenchimento sólido no dark/light
   const inputBaseClasses = `
-    w-full bg-muted/30 border border-border
-    focus:border-foreground/20 focus:bg-muted/50
+    w-full bg-muted border border-border
+    focus:border-foreground/30 focus:ring-1 focus:ring-foreground/10
     text-foreground px-6 py-5 rounded-2xl 
     outline-none transition-all duration-300 
-    placeholder:text-foreground/20 text-xs font-semibold 
+    placeholder:text-muted-foreground/50 text-xs font-semibold 
     appearance-none
   `;
 
@@ -65,7 +66,7 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTML
           {children}
         </Component>
         {as === 'select' && (
-          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/20">
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/40">
              <ChevronDown size={14} />
           </div>
         )}
@@ -81,7 +82,7 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
   <div className="space-y-4">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <span className="text-[10px] font-black text-foreground brand-font-bold uppercase tracking-[0.2em]">{label}</span>
-      <div className="flex bg-muted/50 border border-border p-1.5 rounded-2xl w-full md:w-auto">
+      <div className="flex bg-muted border border-border p-1.5 rounded-2xl w-full md:w-auto">
         <button 
           type="button"
           onClick={() => onChange(false)}
