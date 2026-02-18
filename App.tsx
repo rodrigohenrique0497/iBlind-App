@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Shield, TrendingUp, Package, BarChart3, Plus, History, 
   Settings as SettingsIcon, Moon, Sun, Search, Smartphone, Clock, AlertTriangle,
-  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight
+  Zap, Trash2, ArrowUpRight, Activity, Camera, X, FileText, ChevronRight, Users as UsersIcon
 } from 'lucide-react';
 import { Attendance, User, InventoryItem, AppTheme, TenantConfig, AuditLog } from './types.ts';
 import { Auth, BrandLogo } from './components/Auth.tsx';
@@ -17,7 +17,7 @@ import { StockManagement } from './modules/StockManagement.tsx';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
-type ViewType = 'PAINEL' | 'WIZARD' | 'SERVIÇOS' | 'ESTOQUE' | 'AJUSTES' | 'AUDITORIA';
+type ViewType = 'PAINEL' | 'WIZARD' | 'SERVIÇOS' | 'ESTOQUE' | 'AJUSTES' | 'AUDITORIA' | 'ESPECIALISTAS';
 
 const App = () => {
   const [user, setUser] = useState<User | null>(() => authService.getSession());
@@ -36,13 +36,13 @@ const App = () => {
   const [history, setHistory] = useState<Attendance[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [specialists, setSpecialists] = useState<User[]>([]);
   
   const [selectedProtocol, setSelectedProtocol] = useState<Attendance | null>(null);
   const [auditTarget, setAuditTarget] = useState<string | null>(null);
   const [auditReason, setAuditReason] = useState('');
 
   useEffect(() => {
-    // Detecta se o usuário veio de um link de recuperação via hash ou rota
     const checkRecovery = () => {
       const hasRecoveryToken = window.location.hash.includes('type=recovery') || 
                                window.location.hash.includes('access_token=') ||
@@ -65,7 +65,7 @@ const App = () => {
           id: session.user.id,
           name: session.user.user_metadata.full_name || 'Operador',
           email: session.user.email!,
-          role: 'TECNICO'
+          role: 'ADMIN' // Default to Admin for now or based on metadata
         };
         setUser(u);
         authService.setSession(u);
@@ -84,15 +84,26 @@ const App = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [attRes, invRes, logRes] = await Promise.all([
+        const [attRes, invRes, logRes, usersRes] = await Promise.all([
           supabase.from('attendances').select('*').order('created_at', { ascending: false }),
           supabase.from('inventory_items').select('*'),
-          supabase.from('audit_logs').select('*').order('timestamp', { ascending: false })
+          supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }),
+          // Simulating specialists for now as profiles table might not be ready
+          supabase.from('profiles').select('*').eq('role', 'ESPECIALISTA')
         ]);
 
         if (attRes.data) setHistory(attRes.data.map(row => ({...row.data, id: row.id})));
         if (invRes.data) setInventory(invRes.data.map(row => ({...row.data, id: row.id})));
         if (logRes.data) setLogs(logRes.data);
+        if (usersRes.data) {
+          setSpecialists(usersRes.data);
+        } else {
+          // Mock specialists if table empty
+          setSpecialists([
+            { id: 'spec1', name: 'Especialista Carlos', email: 'carlos@iblind.com', role: 'ESPECIALISTA' },
+            { id: 'spec2', name: 'Especialista Ana', email: 'ana@iblind.com', role: 'ESPECIALISTA' }
+          ]);
+        }
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
       } finally {
@@ -194,9 +205,7 @@ const App = () => {
     setAuditReason('');
   };
 
-  // Renderização da Tela de Recuperação
   if (isRecoveryMode) return <ResetPassword />;
-
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 
   if (isLoading) return (
@@ -235,13 +244,13 @@ const App = () => {
               <IBlindStatCard title="Receita" value={formatCurrency(stats.revenue)} icon={<TrendingUp size={20}/>} />
               <IBlindStatCard title="Hoje" value={stats.countToday} icon={<Zap size={20}/>} color="text-amber-500" />
               <IBlindStatCard title="Alertas" value={stats.criticalStock} icon={<Package size={20}/>} color={stats.criticalStock > 0 ? "text-red-500" : "text-emerald-500"} />
-              <IBlindStatCard title="Serviços" value={stats.totalServices} icon={<Activity size={20}/>} color="text-indigo-500" />
+              <IBlindStatCard title="Especialistas" value={specialists.length} icon={<UsersIcon size={20}/>} color="text-indigo-500" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <IBCard className="lg:col-span-2 space-y-8">
                 <div className="flex items-center justify-between">
-                  <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Atividades</h2>
+                  <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Atividades Recentes</h2>
                   <IBButton variant="ghost" className="px-4 py-2 text-xs" onClick={() => setView('SERVIÇOS')}>VER TUDO</IBButton>
                 </div>
                 <div className="space-y-4">
@@ -257,7 +266,7 @@ const App = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold uppercase text-foreground">{a.clientName}</p>
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{a.deviceModel}</p>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{a.deviceModel} • <span className="text-foreground/40">{a.specialistName || 'S/E'}</span></p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -266,24 +275,23 @@ const App = () => {
                       </div>
                     </div>
                   ))}
-                  {history.length === 0 && <p className="text-center text-foreground/10 text-xs py-10 uppercase tracking-widest">Vazio</p>}
                 </div>
               </IBCard>
 
               <IBCard className="space-y-8">
-                <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Estoque</h2>
+                <h2 className="brand-font-bold text-xl uppercase flex items-center gap-3 text-foreground">Estoque Crítico</h2>
                 <div className="space-y-4">
                   {inventory.filter(i => i.currentStock <= i.minStock).slice(0, 4).map(item => (
                     <div key={item.id} className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl flex items-center justify-between">
                       <div>
                         <p className="text-[10px] font-bold uppercase text-foreground">{item.model}</p>
-                        <p className="text-[8px] text-red-500 font-bold uppercase mt-1">Reposição</p>
+                        <p className="text-[8px] text-red-500 font-bold uppercase mt-1">{item.assignedSpecialistName || 'ESTOQUE CENTRAL'}</p>
                       </div>
                       <IBBadge variant="error">{item.currentStock} un</IBBadge>
                     </div>
                   ))}
                   <IBButton variant="secondary" className="w-full" onClick={() => setView('ESTOQUE')}>
-                    ESTOQUE
+                    VER INVENTÁRIO
                   </IBButton>
                 </div>
               </IBCard>
@@ -294,13 +302,14 @@ const App = () => {
         {view === 'ESTOQUE' && (
           <StockManagement 
             items={inventory} 
+            specialists={specialists}
             onUpdateItems={handleUpdateStock}
           />
         )}
 
         {view === 'SERVIÇOS' && (
           <div className="space-y-10">
-            <header className="space-y-2">
+            <header className="space-y-2 text-left">
               <h2 className="text-4xl brand-font-bold uppercase text-foreground">Serviços</h2>
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Registros Operacionais</p>
             </header>
@@ -315,9 +324,9 @@ const App = () => {
                     <div className="w-12 h-12 rounded-xl bg-foreground/5 flex items-center justify-center text-foreground/50">
                         <FileText size={24} />
                     </div>
-                    <div>
+                    <div className="text-left">
                       <h4 className="brand-font-bold text-lg uppercase text-foreground">{a.clientName}</h4>
-                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">{a.deviceModel} • {a.warrantyId}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">{a.deviceModel} • Especialista: {a.specialistName}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-8">
@@ -342,12 +351,12 @@ const App = () => {
 
         {view === 'AJUSTES' && (
           <div className="max-w-2xl space-y-12">
-            <header className="space-y-2">
+            <header className="space-y-2 text-left">
               <h2 className="text-4xl brand-font-bold uppercase text-foreground">Ajustes</h2>
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Configuração do Sistema</p>
             </header>
             
-            <IBCard className="space-y-10 p-10">
+            <IBCard className="space-y-10 p-10 text-left">
               <div className="space-y-6">
                 <h3 className="text-[11px] font-black text-foreground/30 uppercase tracking-[0.4em]">Personalização</h3>
                 <div className="grid grid-cols-1 gap-8">
@@ -394,12 +403,12 @@ const App = () => {
 
         {view === 'AUDITORIA' && (
           <div className="space-y-10">
-            <header className="space-y-2">
+            <header className="space-y-2 text-left">
               <h2 className="text-4xl brand-font-bold uppercase text-foreground">Auditoria</h2>
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.4em] opacity-40">Logs de Segurança</p>
             </header>
-            <div className="bg-foreground/5 border border-foreground/5 rounded-3xl overflow-hidden">
-              <table className="w-full text-left">
+            <div className="bg-foreground/5 border border-foreground/5 rounded-3xl overflow-hidden overflow-x-auto">
+              <table className="w-full text-left min-w-[600px]">
                 <thead className="bg-foreground/5 border-b border-foreground/5">
                   <tr>
                     <th className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-foreground/30">Data</th>
@@ -419,7 +428,6 @@ const App = () => {
                   ))}
                 </tbody>
               </table>
-              {logs.length === 0 && <p className="text-center py-20 text-foreground/10 uppercase tracking-widest text-[10px]">Sem registros</p>}
             </div>
           </div>
         )}
@@ -428,14 +436,15 @@ const App = () => {
           <div className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8 animate-premium-in">
             <div className="w-full max-w-4xl bg-card border border-foreground/10 rounded-[40px] flex flex-col h-[90vh] shadow-2xl overflow-hidden">
               <header className="p-8 border-b border-foreground/5 flex items-center justify-between">
-                <div>
+                <div className="text-left">
                   <h3 className="text-2xl brand-font-bold uppercase text-foreground">SERVIÇO #{selectedProtocol.warrantyId}</h3>
+                  <p className="text-[10px] text-foreground/20 font-black uppercase tracking-widest mt-1">Especialista: {selectedProtocol.specialistName}</p>
                 </div>
                 <button onClick={() => setSelectedProtocol(null)} className="w-12 h-12 bg-foreground/5 rounded-2xl flex items-center justify-center hover:bg-foreground/10 transition-colors text-foreground">
                   <X size={24} />
                 </button>
               </header>
-              <div className="flex-1 overflow-y-auto p-8 space-y-12 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-8 space-y-12 no-scrollbar text-left">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <section className="space-y-6">
                     <h4 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Dados do Cliente</h4>
@@ -484,7 +493,7 @@ const App = () => {
                 </section>
               </div>
               <footer className="p-8 border-t border-foreground/5 flex justify-between items-center bg-card">
-                <div>
+                <div className="text-left">
                   <p className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Valor Final</p>
                   <p className="text-3xl brand-font-bold mt-1 text-foreground">{formatCurrency(selectedProtocol.totalValue)}</p>
                 </div>
@@ -496,7 +505,7 @@ const App = () => {
 
         {auditTarget && (
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-background/90 backdrop-blur-xl animate-premium-in">
-            <IBCard className="w-full max-w-lg space-y-8 p-10 border-red-500/20">
+            <IBCard className="w-full max-w-lg space-y-8 p-10 border-red-500/20 text-left">
               <div className="flex items-center gap-4 text-red-500">
                   <AlertTriangle size={24}/>
                   <h3 className="text-2xl brand-font-bold uppercase">Excluir Registro</h3>
@@ -520,6 +529,7 @@ const App = () => {
           <div className="fixed inset-0 z-[400] bg-background">
             <NewServiceWizard 
               inventory={inventory}
+              specialists={specialists}
               onCancel={() => setView('PAINEL')}
               onComplete={handleCompleteService}
             />

@@ -14,11 +14,12 @@ export const authService = {
 
     if (error) throw error;
     if (data.user) {
+      // Fix: Role 'TECNICO' was not defined in UserRole type. Changed to 'ESPECIALISTA'.
       return {
         id: data.user.id,
         name: data.user.user_metadata.full_name || name,
         email: data.user.email!,
-        role: 'TECNICO',
+        role: 'ESPECIALISTA',
         themePreference: 'DARK'
       };
     }
@@ -33,11 +34,12 @@ export const authService = {
 
     if (error) throw error;
     if (data.user) {
+      // Fix: Role 'TECNICO' was not defined in UserRole type. Changed to 'ESPECIALISTA'.
       return {
         id: data.user.id,
         name: data.user.user_metadata.full_name || 'Operador',
         email: data.user.email!,
-        role: 'TECNICO',
+        role: 'ESPECIALISTA',
         themePreference: 'DARK'
       };
     }

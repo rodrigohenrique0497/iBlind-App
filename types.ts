@@ -1,5 +1,5 @@
 
-export type UserRole = 'ADMIN' | 'TECNICO';
+export type UserRole = 'ADMIN' | 'ESPECIALISTA';
 export type AppTheme = 'DARK' | 'LIGHT';
 
 export interface TenantConfig {
@@ -20,7 +20,7 @@ export interface User {
 
 export type PaymentMethod = 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO';
 export type ServiceCoverage = 'FULL' | 'SCREEN' | 'BACK' | 'CAMERAS';
-export type InventoryCategory = 'PELICULA' | 'LIQUIDO' | 'ACESSORIO';
+export type InventoryCategory = 'PELICULA' | 'CAPA' | 'ACESSORIO';
 export type MovementType = 'IN' | 'OUT' | 'ADJUST' | 'AUTO_DEDUCTION';
 
 export interface StockMovement {
@@ -37,11 +37,11 @@ export interface StockMovement {
 
 export interface InventoryItem {
   id: string;
-  brand: string;        // Apple, Samsung
-  model: string;        // iPhone 16 Pro
-  type: string;         // Tela, Traseira, Lente
-  material: string;     // Hydrogel, Cerâmica, Vidro
-  sku: string;          // Internal code
+  brand: string;        
+  model: string;        
+  type: string;         
+  material: string;     
+  sku: string;          
   currentStock: number;
   minStock: number;
   supplier: string;
@@ -49,6 +49,8 @@ export interface InventoryItem {
   suggestedPrice: number;
   lastEntryDate: string;
   category: InventoryCategory;
+  assignedSpecialistId?: string; // Vinculação ao Especialista
+  assignedSpecialistName?: string;
   observations?: string;
 }
 
@@ -69,6 +71,8 @@ export interface Attendance {
   warrantyUntil: string;
   technicianId: string;
   technicianName: string;
+  specialistId: string; // Especialista responsável pelo serviço
+  specialistName: string;
   clientName: string;
   clientPhone: string;
   deviceModel: string;
@@ -80,13 +84,13 @@ export interface Attendance {
     botoes: { hasDamage: boolean; notes?: string };
   };
   coverage: ServiceCoverage;
-  usedItemId?: string; // ID from inventory
+  usedItemId?: string; 
   valueBlindagem: number;
   valuePelicula?: number;
   valueOthers?: number;
   paymentMethod: PaymentMethod;
   totalValue: number;
   clientSignature: string;
-  photos?: string[]; // Base64 strings of device photos
+  photos?: string[]; 
   isDeleted?: boolean;
 }
