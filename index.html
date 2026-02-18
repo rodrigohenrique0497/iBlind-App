@@ -4,25 +4,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
-    <!-- PWA Primary Meta Tags -->
-    <title>iBlind App</title>
-    <meta name="title" content="iBlind App">
-    <meta name="description" content="Gestão inteligente iBlind.">
-    <meta name="theme-color" content="#000000">
-
-    <!-- iOS Meta Tags & Icons -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="iBlind">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-    
-    <!-- Standard Favicons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-    
+    <meta name="theme-color" content="#000000">
     <link rel="manifest" href="manifest.json">
-
+    <title>iBlind App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -87,16 +73,38 @@
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         margin: 0;
-        /* Padding para safe area no iOS (notch) */
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
       }
 
+      /* Fix Definitivo para Dropdowns Dark */
       select, select option {
         background-color: #0A0A0A !important;
         color: #FFFFFF !important;
         border-radius: 12px;
       }
+
+      /* Estilização da scrollbar para ser premium */
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+      }
+
+      .max-content {
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+
+      .brand-font-bold {
+        font-weight: 800;
+        letter-spacing: -0.05em;
+      }
+
+      .no-scrollbar::-webkit-scrollbar { display: none; }
 
       .animate-premium-in {
         animation: premiumIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -105,6 +113,22 @@
       @keyframes premiumIn {
         from { transform: translateY(10px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
+      }
+
+      .skeleton {
+        background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+      }
+
+      @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      :focus-visible {
+        outline: none;
       }
     </style>
   <script type="importmap">

@@ -1,32 +1,25 @@
 
 {
-  "name": "iBlind App",
+  "name": "iBlind Controle Operacional",
   "short_name": "iBlind",
-  "description": "Controle Operacional e Gestão de Blindagem Premium iBlind.",
+  "description": "Gestão inteligente de blindagem e finanças.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "portrait",
-  "categories": ["business", "productivity"],
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/513/513754.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/maskable-icon.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/513/513754.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
     }
   ]
 }
