@@ -229,11 +229,11 @@ const App = () => {
   if (!user) return <Auth onLogin={(u) => { setUser(u); }} />;
 
   if (isLoading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
        <div className="flex flex-col items-center gap-6">
           <BrandLogo size="text-6xl" />
-          <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="w-1/2 h-full bg-white animate-[loading_1.5s_infinite]" />
+          <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
+            <div className="w-1/2 h-full bg-foreground animate-[loading_1.5s_infinite]" />
           </div>
        </div>
     </div>

@@ -115,10 +115,10 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
 
       <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
         <div className="max-w-xl mx-auto px-6 pt-20 pb-40 space-y-16">
-          <div className="space-y-4 text-center md:text-left">
+          <div className="space-y-4 text-center">
             <IBBadge variant="primary">MODALIDADE: {STEPS[step].label}</IBBadge>
-            <h1 className="text-4xl brand-font-bold tracking-tighter text-foreground uppercase leading-none">Novo Atendimento</h1>
-            <p className="text-[10px] font-black text-foreground/20 tracking-[0.5em] uppercase">Etapa {step + 1} de {STEPS.length}</p>
+            <h1 className="text-4xl brand-font-bold tracking-tighter text-foreground uppercase leading-none mt-4">Novo Atendimento</h1>
+            <p className="text-[10px] font-black text-foreground/20 tracking-[0.5em] uppercase mt-2">Etapa {step + 1} de {STEPS.length}</p>
           </div>
 
           {step === 0 && (
@@ -244,11 +244,17 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
         </div>
       </main>
 
-      <footer className="p-8 bg-background/90 backdrop-blur-3xl border-t border-border sticky bottom-0 z-10">
-        <div className="max-w-xl auto flex gap-4">
-          <IBButton onClick={next} className="flex-1 h-20 rounded-[32px] text-sm" disabled={step === 3 && !data.clientSignature}>
-            {step === 3 ? 'FINALIZAR ATENDIMENTO' : 'PRÓXIMO PASSO'}
-            {step < 3 && <ChevronRight size={20} />}
+      <footer className="p-8 pb-12 bg-background/90 backdrop-blur-3xl border-t border-border sticky bottom-0 z-10 flex justify-center">
+        <div className="w-full max-w-sm">
+          <IBButton 
+            onClick={next} 
+            className="w-full h-20 rounded-[32px] text-xs shadow-2xl premium-shadow" 
+            disabled={step === 3 && !data.clientSignature}
+          >
+            <span className="flex items-center gap-3">
+              {step === 3 ? 'FINALIZAR ATENDIMENTO' : 'PRÓXIMO PASSO'}
+              {step < 3 && <ChevronRight size={18} />}
+            </span>
           </IBButton>
         </div>
       </footer>
