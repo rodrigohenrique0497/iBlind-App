@@ -532,12 +532,15 @@ const App = () => {
                   <section className="space-y-10">
                     <h4 className="text-[11px] font-bold text-white/10 uppercase tracking-[0.6em]">Incoming Inspection</h4>
                     <div className="grid grid-cols-2 gap-5">
-                      {(['tela', 'traseira', 'cameras', 'botoes'] as const).map(part => (
+                      {(['tela', 'traseira', 'cameras', 'botoes', 'biometria', 'audio', 'conector'] as const).map(part => (
                         <div key={part} className={`p-6 rounded-premium border ${selectedProtocol.state[part]?.hasDamage ? 'border-red-500/30 bg-red-500/[0.03]' : 'border-white/5 bg-black/40'}`}>
                           <p className="text-[10px] font-bold uppercase text-white/20 mb-2">{part}</p>
                           <p className={`text-[12px] font-extrabold uppercase ${selectedProtocol.state[part]?.hasDamage ? 'text-red-400' : 'text-emerald-400'}`}>
                             {selectedProtocol.state[part]?.hasDamage ? 'AVARIA' : 'ÍNTEGRO'}
                           </p>
+                          {selectedProtocol.state[part]?.notes && (
+                            <p className="mt-2 text-[9px] text-white/40 italic">{selectedProtocol.state[part].notes}</p>
+                          )}
                         </div>
                       ))}
                     </div>
