@@ -10,6 +10,7 @@ interface StockProps {
   onUpdateItems: (items: InventoryItem[]) => void;
 }
 
+// Fix: Removed stray 'A' in the props destructuring on line 13
 export const StockManagement: React.FC<StockProps> = ({ items, specialists, onUpdateItems }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);

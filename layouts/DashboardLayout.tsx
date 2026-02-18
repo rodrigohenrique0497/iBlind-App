@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   Plus, LayoutDashboard, Package, History, LogOut, 
-  User as UserIcon, Settings as SettingsIcon, Shield, Activity
+  User as UserIcon, Settings as SettingsIcon, Shield, Activity, Users as UsersIcon
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -16,6 +16,7 @@ interface LayoutProps {
 export const DashboardLayout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, userName, onLogout }) => {
   const navItems = [
     { id: 'PAINEL', label: 'PAINEL', icon: <LayoutDashboard size={18} /> },
+    { id: 'ESPECIALISTAS', label: 'ESPECIALISTAS', icon: <UsersIcon size={18} /> },
     { id: 'ESTOQUE', label: 'ESTOQUE', icon: <Package size={18} /> },
     { id: 'SERVIÇOS', label: 'SERVIÇOS', icon: <History size={18} /> },
     { id: 'AUDITORIA', label: 'AUDITORIA', icon: <Activity size={18} /> },

@@ -14,6 +14,7 @@ import { DashboardLayout } from './layouts/DashboardLayout.tsx';
 import { IBCard, IBButton, IBBadge, IBlindStatCard, IBInput } from './components/iBlindUI.tsx';
 import { NewServiceWizard } from './modules/NewServiceWizard.tsx';
 import { StockManagement } from './modules/StockManagement.tsx';
+import { SpecialistManagement } from './modules/SpecialistManagement.tsx';
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
@@ -65,7 +66,7 @@ const App = () => {
           id: session.user.id,
           name: session.user.user_metadata.full_name || 'Operador',
           email: session.user.email!,
-          role: 'ADMIN' // Default to Admin for now or based on metadata
+          role: 'ADMIN'
         };
         setUser(u);
         authService.setSession(u);
@@ -88,17 +89,16 @@ const App = () => {
           supabase.from('attendances').select('*').order('created_at', { ascending: false }),
           supabase.from('inventory_items').select('*'),
           supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }),
-          // Simulating specialists for now as profiles table might not be ready
           supabase.from('profiles').select('*').eq('role', 'ESPECIALISTA')
         ]);
 
         if (attRes.data) setHistory(attRes.data.map(row => ({...row.data, id: row.id})));
         if (invRes.data) setInventory(invRes.data.map(row => ({...row.data, id: row.id})));
         if (logRes.data) setLogs(logRes.data);
-        if (usersRes.data) {
+        
+        if (usersRes.data && usersRes.data.length > 0) {
           setSpecialists(usersRes.data);
         } else {
-          // Mock specialists if table empty
           setSpecialists([
             { id: 'spec1', name: 'Especialista Carlos', email: 'carlos@iblind.com', role: 'ESPECIALISTA' },
             { id: 'spec2', name: 'Especialista Ana', email: 'ana@iblind.com', role: 'ESPECIALISTA' }
@@ -134,6 +134,23 @@ const App = () => {
       criticalStock: inventory.filter(i => i.currentStock <= i.minStock).length
     };
   }, [history, inventory]);
+
+  const handleAddSpecialist = async (data: Partial<User>) => {
+    const newSpec = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: data.name!,
+      email: data.email!,
+      role: 'ESPECIALISTA' as const
+    };
+
+    await supabase.from('profiles').insert([newSpec]);
+    setSpecialists([...specialists, newSpec]);
+  };
+
+  const handleDeleteSpecialist = async (id: string) => {
+    await supabase.from('profiles').delete().eq('id', id);
+    setSpecialists(specialists.filter(s => s.id !== id));
+  };
 
   const handleCompleteService = async (data: Partial<Attendance>) => {
     const now = new Date();
@@ -231,8 +248,8 @@ const App = () => {
         {view === 'PAINEL' && (
           <div className="space-y-12">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-              <div className="space-y-2">
-                <h1 className="text-3xl brand-font-bold tracking-tight text-foreground">iBlind</h1>
+              <div className="space-y-2 text-left">
+                <h1 className="text-3xl brand-font-bold tracking-tight text-foreground uppercase">iBlind</h1>
                 <p className="text-muted-foreground text-[10px] font-bold tracking-[0.4em] uppercase opacity-40">Painel de Inteligência</p>
               </div>
               <IBButton onClick={() => setView('WIZARD')} className="w-full md:w-auto px-10">
@@ -264,7 +281,7 @@ const App = () => {
                         <div className="w-10 h-10 bg-foreground/5 text-foreground rounded-xl flex items-center justify-center">
                           <Smartphone size={18}/>
                         </div>
-                        <div>
+                        <div className="text-left">
                           <p className="text-xs font-bold uppercase text-foreground">{a.clientName}</p>
                           <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">{a.deviceModel} • <span className="text-foreground/40">{a.specialistName || 'S/E'}</span></p>
                         </div>
@@ -283,7 +300,7 @@ const App = () => {
                 <div className="space-y-4">
                   {inventory.filter(i => i.currentStock <= i.minStock).slice(0, 4).map(item => (
                     <div key={item.id} className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl flex items-center justify-between">
-                      <div>
+                      <div className="text-left">
                         <p className="text-[10px] font-bold uppercase text-foreground">{item.model}</p>
                         <p className="text-[8px] text-red-500 font-bold uppercase mt-1">{item.assignedSpecialistName || 'ESTOQUE CENTRAL'}</p>
                       </div>
@@ -297,6 +314,15 @@ const App = () => {
               </IBCard>
             </div>
           </div>
+        )}
+
+        {view === 'ESPECIALISTAS' && (
+          <SpecialistManagement 
+            specialists={specialists} 
+            history={history}
+            onAdd={handleAddSpecialist}
+            onDelete={handleDeleteSpecialist}
+          />
         )}
 
         {view === 'ESTOQUE' && (
