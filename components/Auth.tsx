@@ -3,13 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, ArrowRight, ArrowLeft, MailCheck } from 'lucide-react';
 import { User } from '../types.ts';
 import { authService } from '../auth.ts';
+import { IBInput } from './iBlindUI.tsx';
 
 export const BrandLogo: React.FC<{ size?: string, inverted?: boolean }> = ({ size = "text-5xl", inverted = false }) => (
   <div className="flex flex-col items-center select-none group">
     <h1 className={`${size} brand-font-bold tracking-tighter transition-colors text-foreground`}>
       iBlind
     </h1>
-    <p className="text-[10px] font-bold tracking-[0.4em] mt-2 text-foreground/20 uppercase">
+    <p className="text-[10px] font-bold tracking-[0.4em] mt-2 text-foreground/40 uppercase">
       Controle Operacional
     </p>
   </div>
@@ -87,8 +88,8 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl brand-font-bold text-foreground uppercase">Verifique seu e-mail</h3>
-                <p className="text-[10px] text-foreground/40 uppercase tracking-widest leading-loose">
-                  Enviamos instruções de recuperação para <br/> <span className="text-foreground/60">{email}</span>
+                <p className="text-[10px] text-foreground/60 uppercase tracking-widest leading-loose">
+                  Enviamos instruções de recuperação para <br/> <span className="text-foreground font-bold">{email}</span>
                 </p>
               </div>
               <button 
@@ -111,44 +112,33 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
               <div className="space-y-6">
                 {mode === 'REGISTER' && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest ml-1">Nome</label>
-                    <input 
-                      className="w-full bg-muted/30 border border-border text-foreground px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-foreground/20 transition-all" 
-                      placeholder="Seu nome completo" 
-                      value={name} 
-                      onChange={e => setName(e.target.value)} 
-                      required
-                    />
-                  </div>
+                  <IBInput 
+                    label="Nome Completo" 
+                    placeholder="Seu nome" 
+                    value={name} 
+                    onChange={e => setName(e.target.value)} 
+                    required
+                  />
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest ml-1">E-mail</label>
-                  <input 
-                    className="w-full bg-muted/30 border border-border text-foreground px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-foreground/20 transition-all" 
-                    placeholder="exemplo@iblind.com" 
-                    type="email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required 
-                  />
-                </div>
+                <IBInput 
+                  label="E-mail" 
+                  placeholder="exemplo@iblind.com" 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                  required 
+                />
 
                 {mode !== 'FORGOT' && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center px-1">
-                      <label className="text-[10px] font-bold text-foreground/30 uppercase tracking-widest">Senha</label>
-                    </div>
-                    <input 
-                      className="w-full bg-muted/30 border border-border text-foreground px-6 py-5 rounded-2xl text-xs font-medium outline-none focus:border-foreground/20 transition-all" 
-                      placeholder="••••••••" 
-                      type="password"
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      required 
-                    />
-                  </div>
+                  <IBInput 
+                    label="Senha de Acesso" 
+                    placeholder="••••••••" 
+                    type="password"
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)} 
+                    required 
+                  />
                 )}
               </div>
 
@@ -156,7 +146,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-20 bg-foreground text-background rounded-3xl transition-all duration-300 active:scale-95 disabled:opacity-50 hover:opacity-90 flex items-center justify-center group"
+                  className="w-full h-20 bg-foreground text-background rounded-3xl transition-all duration-300 active:scale-95 disabled:opacity-50 hover:opacity-95 flex items-center justify-center group"
                 >
                   <span className="brand-font-bold text-[11px] tracking-widest flex items-center gap-3 uppercase">
                     {isLoading ? (
@@ -164,7 +154,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                     ) : (
                       <>
                         {mode === 'LOGIN' ? 'Acessar Plataforma' : mode === 'REGISTER' ? 'Criar Conta' : 'Recuperar Acesso'}
-                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </span>
@@ -174,7 +164,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <button 
                     type="button"
                     onClick={() => setMode('FORGOT')}
-                    className="w-full py-2 text-[10px] font-bold text-foreground/20 hover:text-foreground transition-all uppercase tracking-[0.2em]"
+                    className="w-full py-2 text-[10px] font-bold text-foreground/40 hover:text-foreground transition-all uppercase tracking-[0.2em]"
                   >
                     Esqueci minha senha
                   </button>
@@ -186,17 +176,17 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   <button 
                     type="button"
                     onClick={() => { setMode('LOGIN'); setError(''); }} 
-                    className="text-[10px] font-bold text-foreground/40 hover:text-foreground transition-all uppercase tracking-widest"
+                    className="text-[11px] font-bold text-foreground/60 hover:text-foreground transition-all uppercase tracking-widest"
                   >
                     Voltar ao login
                   </button>
                 ) : (
                   <>
-                    <p className="text-[9px] font-bold text-foreground/10 uppercase tracking-[0.3em]">Acesso Exclusivo</p>
+                    <p className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.3em]">Acesso Exclusivo</p>
                     <button 
                       type="button"
                       onClick={() => { setMode(mode === 'LOGIN' ? 'REGISTER' : 'LOGIN'); setError(''); }} 
-                      className="text-[10px] font-bold text-foreground/40 hover:text-foreground transition-all uppercase tracking-widest"
+                      className="text-[11px] font-bold text-foreground/60 hover:text-foreground transition-all uppercase tracking-widest"
                     >
                       {mode === 'LOGIN' ? 'Criar nova conta' : 'Já possuo uma conta'}
                     </button>
@@ -208,7 +198,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         </div>
 
         <p className="mt-12 text-center text-[9px] font-black text-foreground/5 uppercase tracking-[1em] select-none">
-          iBlind © 2024
+          iBlind © 2025
         </p>
       </div>
     </div>

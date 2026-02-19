@@ -36,28 +36,28 @@
       @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;800&display=swap');
       
       :root {
-        --background: #F8F8FA;
-        --foreground: #1C1C1E;
+        --background: #FFFFFF;
+        --foreground: #000000;
         --card: #FFFFFF;
-        --card-foreground: #1C1C1E;
-        --border: rgba(0,0,0,0.06);
+        --card-foreground: #000000;
+        --border: rgba(0,0,0,0.1);
         --primary: #000000;
         --primary-foreground: #FFFFFF;
-        --muted: #E5E5EA;
-        --muted-foreground: #8E8E93;
-        --shadow-premium: 0 4px 20px -5px rgba(0,0,0,0.05);
+        --muted: #F2F2F7;
+        --muted-foreground: #48484A;
+        --shadow-premium: 0 10px 30px -10px rgba(0,0,0,0.08);
       }
 
       .dark {
         --background: #000000;
         --foreground: #FFFFFF;
-        --card: #0A0A0A;
+        --card: #111111;
         --card-foreground: #FFFFFF;
-        --border: rgba(255,255,255,0.06);
+        --border: rgba(255,255,255,0.12);
         --primary: #FFFFFF;
         --primary-foreground: #000000;
         --muted: #1C1C1E;
-        --muted-foreground: #8E8E93;
+        --muted-foreground: #D1D1D6;
         --shadow-premium: none;
       }
 
@@ -65,26 +65,41 @@
         font-family: 'Montserrat', sans-serif;
         -webkit-tap-highlight-color: transparent;
         font-style: normal !important;
-        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.1s ease, transform 0.1s ease, box-shadow 0.2s ease;
       }
 
       html, body {
         height: 100%;
         width: 100%;
         overflow-x: hidden;
-        overscroll-behavior: none; /* Bloqueia pull-to-refresh e bounce */
+        overscroll-behavior: none;
+        background-color: var(--background);
       }
 
       body {
-        background-color: var(--background);
         color: var(--foreground);
         -webkit-font-smoothing: antialiased;
         margin: 0;
-        /* Padding dinâmico para respeitar hardware (notches/gestos) */
         padding-top: env(safe-area-inset-top);
         padding-right: env(safe-area-inset-right);
         padding-bottom: env(safe-area-inset-bottom);
         padding-left: env(safe-area-inset-left);
+      }
+
+      /* Reforço de contraste para seleção e digitação */
+      ::selection {
+        background-color: var(--foreground);
+        color: var(--background);
+      }
+
+      input, textarea, select {
+        color: var(--foreground) !important;
+        opacity: 1 !important;
+      }
+
+      ::placeholder {
+        color: var(--muted-foreground) !important;
+        opacity: 0.5 !important;
       }
 
       .max-content {
@@ -104,11 +119,14 @@
         to { transform: translateY(0); opacity: 1; }
       }
 
-      :focus-visible { outline: none; }
+      :focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 
-      /* Melhorias de toque mobile */
       button, a, select, input {
         touch-action: manipulation;
+      }
+
+      .premium-shadow {
+        box-shadow: var(--shadow-premium);
       }
     </style>
   <script type="importmap">

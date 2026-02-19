@@ -17,7 +17,7 @@ export const IBlindStatCard: React.FC<{ title: string; value: string | number; i
       {icon}
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-60 leading-none">{title}</p>
+      <p className="text-[8px] font-black text-foreground/50 uppercase tracking-[0.1em] leading-none">{title}</p>
       <p className="text-sm sm:text-xl brand-font-bold mt-1 tracking-tighter text-foreground whitespace-normal break-words leading-tight">
         {value}
       </p>
@@ -28,7 +28,7 @@ export const IBlindStatCard: React.FC<{ title: string; value: string | number; i
 export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' | 'ghost', isLoading?: boolean }> = ({ 
   children, variant = 'primary', isLoading, className = '', ...props 
 }) => {
-  const base = "px-6 h-16 rounded-2xl font-black text-[9px] tracking-[0.25em] uppercase transition-all duration-300 active:scale-[0.94] flex items-center justify-center gap-3 disabled:opacity-50 select-none border shrink-0";
+  const base = "px-6 h-16 rounded-2xl font-black text-[10px] tracking-[0.25em] uppercase transition-all duration-300 active:scale-[0.94] flex items-center justify-center gap-3 disabled:opacity-50 select-none border shrink-0";
   
   const variants = {
     primary: "bg-foreground text-background border-foreground shadow-lg",
@@ -47,18 +47,19 @@ export const IBButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & 
 export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> & { label?: string; error?: string; as?: 'input' | 'select' }> = ({ label, error, className = '', as = 'input', children, ...props }) => {
   const Component = as;
   
+  // Aumento de contraste: text-foreground sólido, placeholder mais visível (opacity-60), font-bold e size 16px
   const inputBaseClasses = `
     w-full bg-muted border border-border
-    focus:border-foreground/30 focus:ring-1 focus:ring-foreground/10
+    focus:border-foreground/40 focus:ring-1 focus:ring-foreground/20
     text-foreground px-5 h-16 rounded-2xl 
     outline-none transition-all duration-300 
-    placeholder:text-muted-foreground/40 text-[11px] font-semibold 
+    placeholder:text-foreground/40 text-[16px] font-bold 
     appearance-none
   `;
 
   return (
-    <div className="space-y-1.5 w-full text-left">
-      {label && <label className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.35em] ml-1">{label}</label>}
+    <div className="space-y-2 w-full text-left">
+      {label && <label className="text-[9px] font-black text-foreground/60 uppercase tracking-[0.3em] ml-1">{label}</label>}
       <div className="relative">
         <Component
           {...props as any}
@@ -67,12 +68,12 @@ export const IBInput: React.FC<React.InputHTMLAttributes<HTMLInputElement | HTML
           {children}
         </Component>
         {as === 'select' && (
-          <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/30">
-             <ChevronDown size={14} />
+          <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/40">
+             <ChevronDown size={16} />
           </div>
         )}
       </div>
-      {error && <p className="text-[8px] font-bold text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
+      {error && <p className="text-[9px] font-bold text-red-500 uppercase ml-1 tracking-widest">{error}</p>}
     </div>
   );
 };
@@ -82,19 +83,19 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
 }) => (
   <div className="space-y-3">
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-      <span className="text-[9px] font-black text-foreground uppercase tracking-[0.2em] ml-1">{label}</span>
+      <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] ml-1">{label}</span>
       <div className="flex bg-muted border border-border p-1 rounded-2xl w-full md:w-auto overflow-hidden">
         <button 
           type="button"
           onClick={() => onChange(false)}
-          className={`px-6 h-12 rounded-xl text-[8px] font-black tracking-widest transition-all flex-1 md:flex-none ${!value ? 'bg-foreground text-background shadow-md' : 'text-muted-foreground'}`}
+          className={`px-6 h-12 rounded-xl text-[9px] font-black tracking-widest transition-all flex-1 md:flex-none ${!value ? 'bg-foreground text-background shadow-md' : 'text-foreground/40'}`}
         >
           ÍNTEGRO
         </button>
         <button 
           type="button"
           onClick={() => onChange(true)}
-          className={`px-6 h-12 rounded-xl text-[8px] font-black tracking-widest transition-all flex-1 md:flex-none ${value ? 'bg-red-600 text-white shadow-md' : 'text-muted-foreground'}`}
+          className={`px-6 h-12 rounded-xl text-[9px] font-black tracking-widest transition-all flex-1 md:flex-none ${value ? 'bg-red-600 text-white shadow-md' : 'text-foreground/40'}`}
         >
           AVARIA
         </button>
@@ -107,7 +108,7 @@ export const IBBinaryCheck: React.FC<{ label: string; value: boolean; onChange: 
           placeholder="Especifique..."
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          className="border-red-500/10 h-14"
+          className="border-red-500/20 h-14"
         />
       </div>
     )}
@@ -142,7 +143,7 @@ export const IBImageUpload: React.FC<{
 
   return (
     <div className="space-y-3">
-      <label className="text-[8px] font-black text-foreground/30 uppercase tracking-[0.3em] ml-1">{label}</label>
+      <label className="text-[9px] font-black text-foreground/60 uppercase tracking-[0.3em] ml-1">{label}</label>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {images.map((img, i) => (
           <div key={i} className="relative aspect-square rounded-xl overflow-hidden group bg-muted border border-border">
@@ -152,14 +153,14 @@ export const IBImageUpload: React.FC<{
               onClick={() => removeImage(i)}
               className="absolute inset-0 bg-red-600/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <Trash2 size={18} />
+              <Trash2 size={24} />
             </button>
           </div>
         ))}
         {images.length < max && (
-          <label className="aspect-square rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-foreground/[0.03] transition-all text-muted-foreground group">
-            <Camera size={20} className="group-hover:text-foreground transition-colors" />
-            <span className="text-[7px] font-black uppercase tracking-[0.2em]">Câmera</span>
+          <label className="aspect-square rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-foreground/[0.03] transition-all text-foreground/40 group">
+            <Camera size={24} className="group-hover:text-foreground transition-colors" />
+            <span className="text-[8px] font-black uppercase tracking-[0.2em]">Câmera</span>
             <input 
               type="file" 
               accept="image/*" 
@@ -180,11 +181,11 @@ export const IBBadge: React.FC<{ children: React.ReactNode; variant?: 'success' 
     success: 'bg-foreground text-background',
     warning: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
     error: 'bg-red-600 text-white',
-    neutral: 'bg-transparent text-muted-foreground border border-border',
-    primary: 'bg-foreground/5 text-foreground border border-border',
+    neutral: 'bg-transparent text-foreground/60 border border-border',
+    primary: 'bg-foreground/10 text-foreground border border-foreground/10',
   };
   return (
-    <span className={`text-[7px] font-black uppercase tracking-[0.25em] px-2.5 py-1.5 rounded-lg ${styles[variant]} shrink-0`}>
+    <span className={`text-[8px] font-black uppercase tracking-[0.25em] px-2.5 py-1.5 rounded-lg ${styles[variant]} shrink-0`}>
       {children}
     </span>
   );
