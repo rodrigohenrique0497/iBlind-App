@@ -12,13 +12,15 @@ export const IBCard: React.FC<{ children: React.ReactNode; className?: string; o
 );
 
 export const IBlindStatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; color?: string }> = ({ title, value, icon, color = 'text-primary' }) => (
-  <IBCard className="flex items-center gap-4 p-5 relative overflow-hidden group">
-    <div className={`w-11 h-11 rounded-xl bg-muted border border-border flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-foreground group-hover:text-background shrink-0`}>
+  <IBCard className="flex items-center gap-3 p-4 relative group">
+    <div className={`w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center ${color} transition-all duration-500 group-hover:bg-foreground group-hover:text-background shrink-0`}>
       {icon}
     </div>
-    <div className="overflow-hidden">
-      <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60 truncate">{title}</p>
-      <p className="text-xl brand-font-bold mt-0.5 tracking-tighter text-foreground truncate">{value}</p>
+    <div className="flex-1 min-w-0">
+      <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.1em] opacity-60 leading-none">{title}</p>
+      <p className="text-sm sm:text-xl brand-font-bold mt-1 tracking-tighter text-foreground whitespace-normal break-words leading-tight">
+        {value}
+      </p>
     </div>
   </IBCard>
 );

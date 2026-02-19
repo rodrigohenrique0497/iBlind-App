@@ -244,7 +244,7 @@ const App = () => {
           <div className="space-y-10">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-1.5 text-left">
-                <h1 className="text-2xl lg:text-3xl brand-font-bold tracking-tight text-foreground uppercase">iBlind Dash</h1>
+                <h1 className="text-2xl lg:text-3xl brand-font-bold tracking-tight text-foreground uppercase">iBlind</h1>
                 <p className="text-muted-foreground text-[8px] font-bold tracking-[0.4em] uppercase opacity-40">Status Operacional</p>
               </div>
               <IBButton onClick={() => setView('WIZARD')} className="w-full md:w-auto h-16 rounded-2xl">
