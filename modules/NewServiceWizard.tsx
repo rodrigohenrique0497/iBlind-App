@@ -4,7 +4,7 @@ import {
   ArrowLeft, Smartphone, ShieldCheck, Box, CreditCard, 
   PenTool, CheckCircle, Camera, Wallet, Plus, Zap, 
   Shield, Layers, ChevronRight, AlertCircle, Phone, User as UserIcon,
-  X, Users
+  X, Users as UsersIcon
 } from 'lucide-react';
 import { IBInput, IBButton, IBBinaryCheck, IBBadge, IBCard, IBImageUpload } from '../components/iBlindUI.tsx';
 import { SignaturePad } from '../components/SignaturePad.tsx';
@@ -67,19 +67,16 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
 
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
-    
     if (step === 0) {
-      if (!data.clientName) newErrors.clientName = 'Campo obrigatório';
-      if (!data.deviceModel) newErrors.deviceModel = 'Campo obrigatório';
-      if (!data.specialistId) newErrors.specialistId = 'Selecione um especialista';
+      if (!data.clientName) newErrors.clientName = 'Obrigatório';
+      if (!data.deviceModel) newErrors.deviceModel = 'Obrigatório';
+      if (!data.specialistId) newErrors.specialistId = 'Selecione';
     }
-    
     if (step === 2) {
       if (!data.valueBlindagem || data.valueBlindagem <= 0) {
-        newErrors.valueBlindagem = 'Insira um valor válido';
+        newErrors.valueBlindagem = 'Valor Inválido';
       }
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -97,163 +94,131 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col h-full overflow-hidden z-[500] animate-premium-in">
-      <header className="h-24 border-b border-border bg-background/90 backdrop-blur-2xl flex items-center justify-between px-8 shrink-0 relative z-10">
-        <button onClick={back} className="w-12 h-12 flex items-center justify-center bg-muted rounded-2xl text-foreground/40 hover:text-foreground hover:bg-muted/80 transition-all active:scale-90 border border-border">
-          <ArrowLeft size={20}/>
+      {/* HEADER WIZARD - Respeita Safe Area superior */}
+      <header className="h-[72px] border-b border-border bg-background/90 backdrop-blur-2xl flex items-center justify-between px-5 shrink-0 relative z-10 pt-[env(safe-area-inset-top)]">
+        <button onClick={back} className="w-10 h-10 flex items-center justify-center bg-muted rounded-xl text-foreground/40 active:scale-90 transition-all border border-border">
+          <ArrowLeft size={18}/>
         </button>
         
-        <div className="flex gap-3 px-4 py-2 bg-muted rounded-full border border-border">
+        <div className="flex gap-2 px-3 py-1.5 bg-muted rounded-full border border-border">
           {STEPS.map((s, i) => (
-            <div key={s.id} className={`h-1.5 rounded-full transition-all duration-700 ${i <= step ? 'w-10 bg-foreground' : 'w-2 bg-foreground/10'}`} />
+            <div key={s.id} className={`h-1 rounded-full transition-all duration-700 ${i <= step ? 'w-8 bg-foreground' : 'w-1.5 bg-foreground/10'}`} />
           ))}
         </div>
 
-        <button onClick={onCancel} className="w-12 h-12 flex items-center justify-center bg-red-500/5 rounded-2xl text-red-500/40 hover:text-red-500 transition-all border border-red-500/10">
-          <X size={20}/>
+        <button onClick={onCancel} className="w-10 h-10 flex items-center justify-center bg-red-500/5 rounded-xl text-red-500/40 border border-red-500/10">
+          <X size={18}/>
         </button>
       </header>
 
       <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-        <div className="max-w-xl mx-auto px-6 pt-20 pb-40 space-y-16">
-          <div className="space-y-4 text-center">
-            <IBBadge variant="primary">MODALIDADE: {STEPS[step].label}</IBBadge>
-            <h1 className="text-4xl brand-font-bold tracking-tighter text-foreground uppercase leading-none mt-4">Novo Atendimento</h1>
-            <p className="text-[10px] font-black text-foreground/20 tracking-[0.5em] uppercase mt-2">Etapa {step + 1} de {STEPS.length}</p>
+        <div className="max-w-xl mx-auto px-5 pt-8 pb-32 space-y-10">
+          <div className="space-y-3 text-center">
+            <IBBadge variant="primary">{STEPS[step].label}</IBBadge>
+            <h1 className="text-2xl brand-font-bold tracking-tighter text-foreground uppercase mt-3">Atendimento iBlind</h1>
+            <p className="text-[8px] font-black text-foreground/20 tracking-[0.4em] uppercase">Passo {step + 1} de {STEPS.length}</p>
           </div>
 
           {step === 0 && (
-            <div className="space-y-10 animate-premium-in">
-              <div className="grid gap-8">
-                <div className="space-y-4 text-left">
-                  <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1">Especialista Responsável</label>
-                  <div className="grid grid-cols-1 gap-3">
+            <div className="space-y-6 animate-premium-in">
+              <div className="grid gap-5">
+                <div className="space-y-3 text-left">
+                  <label className="text-[9px] font-black text-foreground/30 uppercase tracking-[0.3em] ml-1">Equipe Técnica</label>
+                  <div className="grid grid-cols-1 gap-2">
                     {specialists.map(spec => (
                       <button 
                         key={spec.id}
                         onClick={() => setData({...data, specialistId: spec.id, specialistName: spec.name})}
-                        className={`w-full p-6 rounded-2xl flex items-center justify-between border transition-all duration-300 ${data.specialistId === spec.id ? 'bg-foreground text-background border-foreground shadow-lg' : 'bg-muted text-foreground/40 border-border hover:border-foreground/20 hover:bg-muted/80'}`}
+                        className={`w-full p-4 h-16 rounded-xl flex items-center justify-between border transition-all active:scale-[0.98] ${data.specialistId === spec.id ? 'bg-foreground text-background border-foreground shadow-md' : 'bg-muted text-foreground/40 border-border'}`}
                       >
-                        <div className="flex items-center gap-4">
-                          <Users size={18} />
-                          <span className="text-xs font-bold uppercase">{spec.name}</span>
+                        <div className="flex items-center gap-3">
+                          <UsersIcon size={16} />
+                          <span className="text-[10px] font-bold uppercase">{spec.name}</span>
                         </div>
-                        {data.specialistId === spec.id && <CheckCircle size={18} />}
+                        {data.specialistId === spec.id && <CheckCircle size={16} />}
                       </button>
                     ))}
-                    {errors.specialistId && <p className="text-[9px] text-red-500 font-bold uppercase ml-1">{errors.specialistId}</p>}
                   </div>
                 </div>
-
-                <IBInput label="NOME COMPLETO DO CLIENTE" placeholder="Ex: João Silva" value={data.clientName} error={errors.clientName} onChange={e => setData({...data, clientName: e.target.value})} />
-                <IBInput label="TELEFONE PARA CONTATO" placeholder="(00) 0 0000-0000" value={data.clientPhone} onChange={e => setData({...data, clientPhone: e.target.value})} />
-                <IBInput label="APARELHO E MODELO" placeholder="Ex: iPhone 15 Pro Max" value={data.deviceModel} error={errors.deviceModel} onChange={e => setData({...data, deviceModel: e.target.value})} />
-              </div>
-
-              <div className="pt-6">
-                <IBCard className="border-dashed bg-muted/20 hover:bg-muted/40 transition-colors p-8">
-                  <IBImageUpload label="EVIDÊNCIAS DO ESTADO INICIAL" images={data.photos || []} onChange={(imgs) => setData({...data, photos: imgs})} max={3} />
-                </IBCard>
+                <IBInput label="NOME DO CLIENTE" placeholder="Ex: João Silva" value={data.clientName} error={errors.clientName} onChange={e => setData({...data, clientName: e.target.value})} />
+                <IBInput label="TELEFONE" placeholder="(00) 0 0000-0000" value={data.clientPhone} onChange={e => setData({...data, clientPhone: e.target.value})} />
+                <IBInput label="APARELHO" placeholder="Ex: iPhone 16 Pro" value={data.deviceModel} error={errors.deviceModel} onChange={e => setData({...data, deviceModel: e.target.value})} />
               </div>
             </div>
           )}
 
           {step === 1 && (
-            <div className="space-y-12 animate-premium-in">
-              <div className="grid gap-10">
-                <IBBinaryCheck label="ESTADO DO DISPLAY (TELA)" value={data.state!.tela.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, hasDamage: v}}})} notes={data.state!.tela.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, notes: n}}})} />
-                <IBBinaryCheck label="ESTADO DA TRASEIRA (VIDRO)" value={data.state!.traseira.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, hasDamage: v}}})} notes={data.state!.traseira.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, notes: n}}})} />
-                <IBBinaryCheck label="LENTES E SENSORES" value={data.state!.cameras.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, hasDamage: v}}})} notes={data.state!.cameras.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, notes: n}}})} />
+            <div className="space-y-6 animate-premium-in">
+              <div className="grid gap-6">
+                <IBBinaryCheck label="DISPLAY / TELA" value={data.state!.tela.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, hasDamage: v}}})} notes={data.state!.tela.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, notes: n}}})} />
+                <IBBinaryCheck label="TRASEIRA" value={data.state!.traseira.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, hasDamage: v}}})} notes={data.state!.traseira.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, notes: n}}})} />
+                <IBBinaryCheck label="MÓDULO CÂMERA" value={data.state!.cameras.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, hasDamage: v}}})} notes={data.state!.cameras.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, notes: n}}})} />
               </div>
-              <div className="pt-8 border-t border-border">
-                <IBInput label="NÚMERO DE SÉRIE / IMEI" placeholder="Digite o identificador único" value={data.deviceIMEI} onChange={e => setData({...data, deviceIMEI: e.target.value})} />
+              <div className="pt-4">
+                <IBImageUpload label="REGISTRO FOTOGRÁFICO" images={data.photos || []} onChange={(imgs) => setData({...data, photos: imgs})} max={3} />
               </div>
             </div>
           )}
 
           {step === 2 && (
-            <div className="space-y-12 animate-premium-in">
-              <div className="space-y-6">
-                <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1 block">TIPO DE COBERTURA</label>
-                <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-8 animate-premium-in">
+              <div className="space-y-4">
+                <label className="text-[9px] font-black text-foreground/30 uppercase tracking-[0.3em] ml-1 block">COBERTURA ESCOLHIDA</label>
+                <div className="grid grid-cols-1 gap-2.5">
                   {(['FULL', 'SCREEN', 'BACK'] as ServiceCoverage[]).map((cov) => (
-                    <button key={cov} onClick={() => setData({...data, coverage: cov})} className={`w-full p-8 rounded-3xl flex items-center justify-between border transition-all duration-500 group ${data.coverage === cov ? 'bg-foreground text-background border-foreground scale-[1.02] shadow-xl z-20' : 'bg-muted text-foreground/40 border-border hover:border-foreground/20 hover:bg-muted/80'}`}>
-                      <div className="flex items-center gap-6">
-                        <div className={`p-4 rounded-2xl transition-colors ${data.coverage === cov ? 'bg-background/10' : 'bg-foreground/5 group-hover:bg-foreground/10'}`}>
-                          {cov === 'FULL' && <Shield size={28} />}
-                          {cov === 'SCREEN' && <Smartphone size={28} />}
-                          {cov === 'BACK' && <Layers size={28} />}
-                        </div>
-                        <div className="text-left">
-                          <span className="font-black text-base uppercase tracking-tight block">{cov === 'FULL' ? 'BLINDAGEM 360' : cov === 'SCREEN' ? 'BLINDAGEM FRONTAL' : 'BLINDAGEM TRASEIRA'}</span>
-                        </div>
+                    <button key={cov} onClick={() => setData({...data, coverage: cov})} className={`w-full p-5 h-20 rounded-2xl flex items-center justify-between border transition-all active:scale-[0.98] ${data.coverage === cov ? 'bg-foreground text-background border-foreground shadow-xl' : 'bg-muted text-foreground/40 border-border'}`}>
+                      <div className="flex items-center gap-4 text-left">
+                        {cov === 'FULL' ? <Shield size={20} /> : cov === 'SCREEN' ? <Smartphone size={20} /> : <Layers size={20} />}
+                        <span className="font-black text-xs uppercase">{cov === 'FULL' ? 'BLINDAGEM 360' : cov === 'SCREEN' ? 'BLINDAGEM FRONTAL' : 'BLINDAGEM TRASEIRA'}</span>
                       </div>
-                      {data.coverage === cov && <CheckCircle size={24} />}
+                      {data.coverage === cov && <CheckCircle size={18} />}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="space-y-10 pt-10 border-t border-border">
-                <div className="relative group text-left">
-                   <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1 mb-4 block">INVESTIMENTO BLINDAGEM</label>
-                   <div className="flex items-baseline gap-4">
-                     <span className="text-2xl font-black text-foreground/20">R$</span>
-                     <input type="number" placeholder="0.00" className={`w-full bg-transparent text-6xl font-black outline-none border-b-2 py-4 transition-all tracking-tighter text-foreground ${errors.valueBlindagem ? 'border-red-500' : 'border-border focus:border-foreground'}`} value={data.valueBlindagem || ''} onChange={(e) => handleNumericInput('valueBlindagem', e.target.value)} />
-                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-8 text-left">
-                  <IBInput label="ADICIONAL PELÍCULA" placeholder="0.00" type="number" value={data.valuePelicula || ''} onChange={(e) => handleNumericInput('valuePelicula', e.target.value)} />
-                  <IBInput label="OUTROS SERVIÇOS" placeholder="0.00" type="number" value={data.valueOthers || ''} onChange={(e) => handleNumericInput('valueOthers', e.target.value)} />
-                </div>
-              </div>
-              <div className="space-y-6 text-left">
-                <label className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em] ml-1 block">FORMA DE ACERTO</label>
-                <div className="grid grid-cols-2 gap-4">
-                  {(['PIX', 'CREDITO', 'DEBITO', 'DINHEIRO'] as PaymentMethod[]).map(method => (
-                    <button key={method} onClick={() => setData({...data, paymentMethod: method})} className={`py-6 rounded-2xl border text-[11px] font-black tracking-widest uppercase transition-all duration-300 ${data.paymentMethod === method ? 'bg-foreground text-background border-foreground shadow-md' : 'bg-muted text-foreground/30 border-border hover:bg-muted/80 hover:border-foreground/20'}`}>
-                      {method}
-                    </button>
-                  ))}
-                </div>
+              <div className="space-y-6 pt-6 border-t border-border">
+                <IBInput label="VALOR BLINDAGEM" type="number" placeholder="0.00" value={data.valueBlindagem || ''} error={errors.valueBlindagem} onChange={(e) => handleNumericInput('valueBlindagem', e.target.value)} />
+                <IBInput label="MODO DE ACERTO" as="select" value={data.paymentMethod} onChange={(e) => setData({...data, paymentMethod: e.target.value as any})}>
+                  <option value="PIX">PIX</option>
+                  <option value="CREDITO">CARTÃO DE CRÉDITO</option>
+                  <option value="DEBITO">CARTÃO DE DÉBITO</option>
+                  <option value="DINHEIRO">DINHEIRO ESPÉCIE</option>
+                </IBInput>
               </div>
             </div>
           )}
 
           {step === 3 && (
-            <div className="space-y-12 animate-premium-in">
-              <div className="space-y-6 text-left">
-                <div className="flex items-center gap-3 text-foreground/30 mb-2">
-                  <PenTool size={16} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">VALORIZAÇÃO DO ACORDO</span>
-                </div>
-                <p className="text-xs font-medium text-foreground/40 leading-relaxed uppercase tracking-wider bg-muted p-6 rounded-2xl border border-border">Ao assinar, o cliente confirma a vistoria realizada e aceita os termos de garantia vitalícia da blindagem iBlind.</p>
-                <div className="bg-card border border-border rounded-[48px] p-4 premium-shadow">
+            <div className="space-y-8 animate-premium-in">
+              <div className="space-y-4 text-left">
+                <p className="text-[10px] font-medium text-foreground/40 leading-relaxed uppercase tracking-wider bg-muted p-5 rounded-2xl border border-border">O cliente declara estar ciente da vistoria prévia e aceita as condições de garantia iBlind.</p>
+                <div className="bg-card border border-border rounded-[32px] overflow-hidden shadow-inner">
                   <SignaturePad onSave={sig => setData({...data, clientSignature: sig})} onClear={() => setData({...data, clientSignature: ''})} />
                 </div>
               </div>
-              <div className="p-10 bg-muted border border-border rounded-[40px] flex justify-between items-center">
-                  <div className="space-y-1 text-left">
-                    <span className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.5em] block">TOTAL FINAL</span>
-                    <span className="text-4xl font-black text-foreground tracking-tighter">{formatCurrency(totalCalculated)}</span>
+              <div className="p-6 bg-muted border border-border rounded-[32px] flex justify-between items-center">
+                  <div className="space-y-0.5 text-left">
+                    <span className="text-[8px] font-black text-foreground/20 uppercase tracking-[0.3em]">VALOR FINAL</span>
+                    <span className="text-3xl font-black text-foreground tracking-tighter">{formatCurrency(totalCalculated)}</span>
                   </div>
-                  <div className={`p-4 rounded-full transition-colors ${data.clientSignature ? 'bg-emerald-500 text-white' : 'bg-foreground/10 text-foreground/20'}`}>
-                    <CheckCircle size={32} />
-                  </div>
+                  <CheckCircle size={28} className={data.clientSignature ? 'text-emerald-500' : 'text-foreground/10'} />
               </div>
             </div>
           )}
         </div>
       </main>
 
-      <footer className="p-8 pb-12 bg-background/90 backdrop-blur-3xl border-t border-border sticky bottom-0 z-10 flex justify-center">
+      {/* FOOTER WIZARD - Safe Area Inferior (Barra de Gestos) */}
+      <footer className="p-5 pb-[calc(env(safe-area-inset-bottom)+12px)] bg-background/90 backdrop-blur-3xl border-t border-border sticky bottom-0 z-10 flex justify-center">
         <div className="w-full max-w-sm">
           <IBButton 
             onClick={next} 
-            className="w-full h-20 rounded-[32px] text-xs shadow-2xl premium-shadow" 
+            className="w-full h-16 rounded-2xl text-[10px] shadow-2xl active:scale-95" 
             disabled={step === 3 && !data.clientSignature}
           >
-            <span className="flex items-center gap-3">
-              {step === 3 ? 'FINALIZAR ATENDIMENTO' : 'PRÓXIMO PASSO'}
-              {step < 3 && <ChevronRight size={18} />}
+            <span className="flex items-center gap-2">
+              {step === 3 ? 'FINALIZAR OPERAÇÃO' : 'PRÓXIMO PASSO'}
+              {step < 3 && <ChevronRight size={16} />}
             </span>
           </IBButton>
         </div>
