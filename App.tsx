@@ -92,9 +92,24 @@ const App = () => {
           supabase.from('profiles').select('*').eq('role', 'ESPECIALISTA')
         ]);
 
+        if (attRes.error) console.error('Erro attendances:', attRes.error);
+        if (invRes.error) console.error('Erro inventory:', invRes.error);
+        if (logRes.error) console.error('Erro logs:', logRes.error);
+        if (usersRes.error) console.error('Erro profiles:', usersRes.error);
+
         if (attRes.data) setHistory(attRes.data.map(row => ({...row.data, id: row.id})));
         if (invRes.data) setInventory(invRes.data.map(row => ({...row.data, id: row.id})));
-        if (logRes.data) setLogs(logRes.data);
+        if (logRes.data) {
+          setLogs(logRes.data.map(l => ({
+            id: l.id,
+            userId: l.user_id,
+            userName: l.user_name,
+            action: l.action,
+            details: l.details,
+            timestamp: l.timestamp,
+            targetId: l.target_id
+          })));
+        }
         
         if (usersRes.data) {
           setSpecialists(usersRes.data);
@@ -200,17 +215,34 @@ const App = () => {
 
   const handleExcluir = async (id: string) => {
     if (!auditReason || auditReason.length < 5) return;
-    const log: AuditLog = {
+    const logData = {
       id: Math.random().toString(36).substr(2, 9),
-      userId: user!.id,
-      userName: user!.name,
+      user_id: user!.id,
+      user_name: user!.name,
       action: 'EXCLUSÃO',
       details: `Protocolo ${id} removido. Justificativa: ${auditReason}`,
       timestamp: new Date().toISOString(),
-      targetId: id
+      target_id: id
     };
-    await supabase.from('audit_logs').insert([log]);
-    await supabase.from('attendances').update({ data: { ...history.find(a => a.id === id), isDeleted: true } }).eq('id', id);
+    
+    const { error: logError } = await supabase.from('audit_logs').insert([logData]);
+    if (logError) console.error('Erro ao salvar log:', logError);
+
+    const { error: attError } = await supabase.from('attendances').update({ 
+      data: { ...history.find(a => a.id === id), isDeleted: true } 
+    }).eq('id', id);
+    if (attError) console.error('Erro ao atualizar atendimento:', attError);
+
+    const log: AuditLog = {
+      id: logData.id,
+      userId: logData.user_id,
+      userName: logData.user_name,
+      action: logData.action,
+      details: logData.details,
+      timestamp: logData.timestamp,
+      targetId: logData.target_id
+    };
+
     setLogs([log, ...logs]);
     setHistory(prev => prev.map(a => a.id === id ? { ...a, isDeleted: true } : a));
     setAuditTarget(null);

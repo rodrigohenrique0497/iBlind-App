@@ -14,14 +14,23 @@ export const authService = {
 
     if (error) throw error;
     if (data.user) {
-      // Fix: Role 'TECNICO' was not defined in UserRole type. Changed to 'ESPECIALISTA'.
-      return {
+      const u: User = {
         id: data.user.id,
         name: data.user.user_metadata.full_name || name,
         email: data.user.email!,
         role: 'ESPECIALISTA',
         themePreference: 'DARK'
       };
+
+      // Persistir no banco de dados public.profiles
+      await supabase.from('profiles').upsert({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role
+      });
+
+      return u;
     }
     return null;
   },
