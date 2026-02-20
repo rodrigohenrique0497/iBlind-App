@@ -18,7 +18,8 @@ export const authService = {
         id: data.user.id,
         name: data.user.user_metadata.full_name || name,
         email: data.user.email!,
-        role: 'ESPECIALISTA',
+        role: 'ADMIN',
+        tenantId: data.user.id, // O primeiro usuário é o dono do tenant
         themePreference: 'DARK'
       };
 
@@ -27,7 +28,8 @@ export const authService = {
         id: u.id,
         name: u.name,
         email: u.email,
-        role: u.role
+        role: u.role,
+        tenant_id: u.tenantId
       });
 
       return u;
@@ -43,12 +45,19 @@ export const authService = {
 
     if (error) throw error;
     if (data.user) {
-      // Fix: Role 'TECNICO' was not defined in UserRole type. Changed to 'ESPECIALISTA'.
+      // Buscar o perfil para obter a role e o tenant_id
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
       return {
         id: data.user.id,
-        name: data.user.user_metadata.full_name || 'Operador',
+        name: profile?.name || data.user.user_metadata.full_name || 'Operador',
         email: data.user.email!,
-        role: 'ESPECIALISTA',
+        role: profile?.role || 'ESPECIALISTA',
+        tenantId: profile?.tenant_id || data.user.id,
         themePreference: 'DARK'
       };
     }

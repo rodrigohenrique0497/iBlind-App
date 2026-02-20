@@ -62,14 +62,24 @@ const App = () => {
       }
       
       if (session?.user && !user) {
-        const u: User = {
-          id: session.user.id,
-          name: session.user.user_metadata.full_name || 'Operador',
-          email: session.user.email!,
-          role: 'ADMIN'
+        const fetchProfile = async () => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          const u: User = {
+            id: session.user.id,
+            name: profile?.name || session.user.user_metadata.full_name || 'Operador',
+            email: session.user.email!,
+            role: profile?.role || 'ADMIN',
+            tenantId: profile?.tenant_id || session.user.id
+          };
+          setUser(u);
+          authService.setSession(u);
         };
-        setUser(u);
-        authService.setSession(u);
+        fetchProfile();
       }
     });
 
@@ -86,10 +96,10 @@ const App = () => {
       setIsLoading(true);
       try {
         const [attRes, invRes, logRes, usersRes] = await Promise.all([
-          supabase.from('attendances').select('*').order('created_at', { ascending: false }),
-          supabase.from('inventory_items').select('*'),
-          supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }),
-          supabase.from('profiles').select('*').eq('role', 'ESPECIALISTA')
+          supabase.from('attendances').select('*').eq('tenant_id', user.tenantId).order('created_at', { ascending: false }),
+          supabase.from('inventory_items').select('*').eq('tenant_id', user.tenantId),
+          supabase.from('audit_logs').select('*').eq('tenant_id', user.tenantId).order('timestamp', { ascending: false }),
+          supabase.from('profiles').select('*').eq('tenant_id', user.tenantId).eq('role', 'ESPECIALISTA')
         ]);
 
         if (attRes.error) console.error('Erro attendances:', attRes.error);
@@ -155,10 +165,11 @@ const App = () => {
       id: Math.random().toString(36).substr(2, 9),
       name: data.name!,
       email: data.email!,
-      role: 'ESPECIALISTA' as const
+      role: 'ESPECIALISTA' as const,
+      tenant_id: user!.tenantId
     };
     await supabase.from('profiles').insert([newSpec]);
-    setSpecialists([...specialists, newSpec]);
+    setSpecialists([...specialists, { ...newSpec, tenantId: user!.tenantId }]);
   };
 
   const handleDeleteSpecialist = async (id: string) => {
@@ -185,6 +196,7 @@ const App = () => {
       client_name: newAttendance.clientName,
       device_model: newAttendance.deviceModel,
       total_value: newAttendance.totalValue,
+      tenant_id: user!.tenantId,
       data: newAttendance
     }]);
 
@@ -208,6 +220,7 @@ const App = () => {
         model: item.model,
         current_stock: item.currentStock,
         min_stock: item.minStock,
+        tenant_id: user!.tenantId,
         data: item
       });
     }
@@ -219,6 +232,7 @@ const App = () => {
       id: Math.random().toString(36).substr(2, 9),
       user_id: user!.id,
       user_name: user!.name,
+      tenant_id: user!.tenantId,
       action: 'EXCLUSÃO',
       details: `Protocolo ${id} removido. Justificativa: ${auditReason}`,
       timestamp: new Date().toISOString(),
