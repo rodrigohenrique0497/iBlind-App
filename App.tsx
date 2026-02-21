@@ -518,13 +518,13 @@ const App = () => {
                     </div>
                   </section>
                   <section className="space-y-4">
-                    <h4 className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Vistoria</h4>
+                    <h4 className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Vistoria de Entrada</h4>
                     <div className="grid grid-cols-3 gap-2">
                       {['tela', 'traseira', 'cameras'].map(part => (
-                        <div key={part} className={`p-3 rounded-xl border ${selectedProtocol.state[part].hasDamage ? 'border-red-500/20 bg-red-500/5' : 'border-foreground/5 bg-foreground/5'}`}>
+                        <div key={part} className={`p-3 rounded-xl border ${selectedProtocol.entryState[part].hasDamage ? 'border-red-500/20 bg-red-500/5' : 'border-foreground/5 bg-foreground/5'}`}>
                           <p className="text-[7px] font-black uppercase text-foreground/30">{part}</p>
-                          <p className={`text-[8px] font-bold mt-0.5 ${selectedProtocol.state[part].hasDamage ? 'text-red-500' : 'text-foreground/40'}`}>
-                            {selectedProtocol.state[part].hasDamage ? 'AVARIA' : 'OK'}
+                          <p className={`text-[8px] font-bold mt-0.5 ${selectedProtocol.entryState[part].hasDamage ? 'text-red-500' : 'text-foreground/40'}`}>
+                            {selectedProtocol.entryState[part].hasDamage ? 'AVARIA' : 'OK'}
                           </p>
                         </div>
                       ))}
@@ -532,16 +532,21 @@ const App = () => {
                   </section>
                 </div>
 
-                <section className="space-y-4">
-                  <h4 className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Assinatura</h4>
-                  <div className="p-4 bg-foreground/5 border border-foreground/10 rounded-2xl h-32 flex items-center justify-center">
-                    {selectedProtocol.clientSignature ? (
-                      <img src={selectedProtocol.clientSignature} className={`max-h-full ${theme === 'DARK' ? 'invert' : ''}`} />
-                    ) : (
-                      <p className="text-[8px] text-foreground/10 uppercase">Sem assinatura</p>
-                    )}
-                  </div>
-                </section>
+                {selectedProtocol.exitState && (
+                  <section className="space-y-4">
+                    <h4 className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.4em]">Vistoria de Saída</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['tela', 'traseira', 'cameras'].map(part => (
+                        <div key={part} className={`p-3 rounded-xl border ${selectedProtocol.exitState![part].hasDamage ? 'border-red-500/20 bg-red-500/5' : 'border-foreground/5 bg-foreground/5'}`}>
+                          <p className="text-[7px] font-black uppercase text-foreground/30">{part}</p>
+                          <p className={`text-[8px] font-bold mt-0.5 ${selectedProtocol.exitState![part].hasDamage ? 'text-red-500' : 'text-foreground/40'}`}>
+                            {selectedProtocol.exitState![part].hasDamage ? 'AVARIA' : 'OK'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
               <footer className="p-6 border-t border-foreground/5 flex justify-between items-center bg-card">
                 <div className="text-left">

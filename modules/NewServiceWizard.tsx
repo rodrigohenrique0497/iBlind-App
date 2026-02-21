@@ -4,10 +4,9 @@ import {
   ArrowLeft, Smartphone, ShieldCheck, Box, CreditCard, 
   PenTool, CheckCircle, Camera, Wallet, Plus, Zap, 
   Shield, Layers, ChevronRight, AlertCircle, Phone, User as UserIcon,
-  X, Users as UsersIcon
+  X, Users as UsersIcon, LogIn, LogOut, ClipboardCheck
 } from 'lucide-react';
 import { IBInput, IBButton, IBBinaryCheck, IBBadge, IBCard, IBImageUpload } from '../components/iBlindUI.tsx';
-import { SignaturePad } from '../components/SignaturePad.tsx';
 import { Attendance, InventoryItem, ServiceCoverage, PaymentMethod, User } from '../types.ts';
 
 interface WizardProps {
@@ -18,10 +17,11 @@ interface WizardProps {
 }
 
 const STEPS = [
-  { id: 'CLIENT', label: 'ENTRADA', icon: <UserIcon size={18} /> },
-  { id: 'DEVICE', label: 'VISTORIA', icon: <Smartphone size={18} /> },
-  { id: 'COVERAGE', label: 'BLINDAGEM', icon: <Shield size={18} /> },
-  { id: 'FINISH', label: 'ASSINATURA', icon: <PenTool size={18} /> },
+  { id: 'CLIENT', label: 'CLIENTE', icon: <UserIcon size={18} /> },
+  { id: 'ENTRY', label: 'ENTRADA', icon: <LogIn size={18} /> },
+  { id: 'SERVICE', label: 'SERVIÇO', icon: <Shield size={18} /> },
+  { id: 'EXIT', label: 'SAÍDA', icon: <LogOut size={18} /> },
+  { id: 'FINISH', label: 'RESUMO', icon: <ClipboardCheck size={18} /> },
 ];
 
 export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists, onComplete, onCancel }) => {
@@ -33,7 +33,13 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
     deviceIMEI: '',
     specialistId: '',
     specialistName: '',
-    state: { 
+    entryState: { 
+      tela: { hasDamage: false, notes: '' }, 
+      traseira: { hasDamage: false, notes: '' }, 
+      cameras: { hasDamage: false, notes: '' }, 
+      botoes: { hasDamage: false, notes: '' } 
+    },
+    exitState: { 
       tela: { hasDamage: false, notes: '' }, 
       traseira: { hasDamage: false, notes: '' }, 
       cameras: { hasDamage: false, notes: '' }, 
@@ -44,7 +50,8 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
     valueBlindagem: 0,
     valuePelicula: 0,
     valueOthers: 0,
-    photos: []
+    photos: [],
+    exitPhotos: []
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -94,7 +101,7 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col h-full overflow-hidden z-[500] animate-premium-in">
-      {/* HEADER WIZARD - Respeita Safe Area superior */}
+      {/* HEADER WIZARD */}
       <header className="h-[72px] border-b border-border bg-background/90 backdrop-blur-2xl flex items-center justify-between px-5 shrink-0 relative z-10 pt-[env(safe-area-inset-top)]">
         <button onClick={back} className="w-10 h-10 flex items-center justify-center bg-muted rounded-xl text-foreground/40 active:scale-90 transition-all border border-border">
           <ArrowLeft size={18}/>
@@ -149,13 +156,17 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
 
           {step === 1 && (
             <div className="space-y-6 animate-premium-in">
+              <div className="space-y-2 text-left">
+                <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Vistoria de Entrada</h3>
+                <p className="text-[9px] text-foreground/40 uppercase">Estado do dispositivo ao chegar</p>
+              </div>
               <div className="grid gap-6">
-                <IBBinaryCheck label="DISPLAY / TELA" value={data.state!.tela.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, hasDamage: v}}})} notes={data.state!.tela.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, tela: {...data.state!.tela, notes: n}}})} />
-                <IBBinaryCheck label="TRASEIRA" value={data.state!.traseira.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, hasDamage: v}}})} notes={data.state!.traseira.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, traseira: {...data.state!.traseira, notes: n}}})} />
-                <IBBinaryCheck label="MÓDULO CÂMERA" value={data.state!.cameras.hasDamage} onChange={(v) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, hasDamage: v}}})} notes={data.state!.cameras.notes} onNotesChange={(n) => setData({...data, state: {...data.state!, cameras: {...data.state!.cameras, notes: n}}})} />
+                <IBBinaryCheck label="DISPLAY / TELA" value={data.entryState!.tela.hasDamage} onChange={(v) => setData({...data, entryState: {...data.entryState!, tela: {...data.entryState!.tela, hasDamage: v}}})} notes={data.entryState!.tela.notes} onNotesChange={(n) => setData({...data, entryState: {...data.entryState!, tela: {...data.entryState!.tela, notes: n}}})} />
+                <IBBinaryCheck label="TRASEIRA" value={data.entryState!.traseira.hasDamage} onChange={(v) => setData({...data, entryState: {...data.entryState!, traseira: {...data.entryState!.traseira, hasDamage: v}}})} notes={data.entryState!.traseira.notes} onNotesChange={(n) => setData({...data, entryState: {...data.entryState!, traseira: {...data.entryState!.traseira, notes: n}}})} />
+                <IBBinaryCheck label="MÓDULO CÂMERA" value={data.entryState!.cameras.hasDamage} onChange={(v) => setData({...data, entryState: {...data.entryState!, cameras: {...data.entryState!.cameras, hasDamage: v}}})} notes={data.entryState!.cameras.notes} onNotesChange={(n) => setData({...data, entryState: {...data.entryState!, cameras: {...data.entryState!.cameras, notes: n}}})} />
               </div>
               <div className="pt-4">
-                <IBImageUpload label="REGISTRO FOTOGRÁFICO" images={data.photos || []} onChange={(imgs) => setData({...data, photos: imgs})} max={3} />
+                <IBImageUpload label="FOTOS DE ENTRADA" images={data.photos || []} onChange={(imgs) => setData({...data, photos: imgs})} max={3} />
               </div>
             </div>
           )}
@@ -189,36 +200,68 @@ export const NewServiceWizard: React.FC<WizardProps> = ({ inventory, specialists
           )}
 
           {step === 3 && (
-            <div className="space-y-8 animate-premium-in">
-              <div className="space-y-4 text-left">
-                <p className="text-[10px] font-medium text-foreground/40 leading-relaxed uppercase tracking-wider bg-muted p-5 rounded-2xl border border-border">O cliente declara estar ciente da vistoria prévia e aceita as condições de garantia iBlind.</p>
-                <div className="bg-card border border-border rounded-[32px] overflow-hidden shadow-inner">
-                  <SignaturePad onSave={sig => setData({...data, clientSignature: sig})} onClear={() => setData({...data, clientSignature: ''})} />
-                </div>
+            <div className="space-y-6 animate-premium-in">
+              <div className="space-y-2 text-left">
+                <h3 className="text-sm font-black text-foreground uppercase tracking-widest">Vistoria de Saída</h3>
+                <p className="text-[9px] text-foreground/40 uppercase">Estado do dispositivo após o serviço</p>
               </div>
-              <div className="p-6 bg-muted border border-border rounded-[32px] flex justify-between items-center">
-                  <div className="space-y-0.5 text-left">
-                    <span className="text-[8px] font-black text-foreground/20 uppercase tracking-[0.3em]">VALOR FINAL</span>
-                    <span className="text-3xl font-black text-foreground tracking-tighter">{formatCurrency(totalCalculated)}</span>
+              <div className="grid gap-6">
+                <IBBinaryCheck label="DISPLAY / TELA" value={data.exitState!.tela.hasDamage} onChange={(v) => setData({...data, exitState: {...data.exitState!, tela: {...data.exitState!.tela, hasDamage: v}}})} notes={data.exitState!.tela.notes} onNotesChange={(n) => setData({...data, exitState: {...data.exitState!, tela: {...data.exitState!.tela, notes: n}}})} />
+                <IBBinaryCheck label="TRASEIRA" value={data.exitState!.traseira.hasDamage} onChange={(v) => setData({...data, exitState: {...data.exitState!, traseira: {...data.exitState!.traseira, hasDamage: v}}})} notes={data.exitState!.traseira.notes} onNotesChange={(n) => setData({...data, exitState: {...data.exitState!, traseira: {...data.exitState!.traseira, notes: n}}})} />
+                <IBBinaryCheck label="MÓDULO CÂMERA" value={data.exitState!.cameras.hasDamage} onChange={(v) => setData({...data, exitState: {...data.exitState!, cameras: {...data.exitState!.cameras, hasDamage: v}}})} notes={data.exitState!.cameras.notes} onNotesChange={(n) => setData({...data, exitState: {...data.exitState!, cameras: {...data.exitState!.cameras, notes: n}}})} />
+              </div>
+              <div className="pt-4">
+                <IBImageUpload label="FOTOS DE SAÍDA" images={data.exitPhotos || []} onChange={(imgs) => setData({...data, exitPhotos: imgs})} max={3} />
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-8 animate-premium-in">
+              <div className="space-y-6 text-left">
+                <div className="p-6 bg-muted border border-border rounded-[32px] space-y-4">
+                  <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">Resumo do Atendimento</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-bold text-foreground/60 uppercase">Cliente</span>
+                      <span className="text-[10px] font-black text-foreground uppercase">{data.clientName}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-bold text-foreground/60 uppercase">Aparelho</span>
+                      <span className="text-[10px] font-black text-foreground uppercase">{data.deviceModel}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] font-bold text-foreground/60 uppercase">Serviço</span>
+                      <span className="text-[10px] font-black text-foreground uppercase">{data.coverage}</span>
+                    </div>
                   </div>
-                  <CheckCircle size={28} className={data.clientSignature ? 'text-emerald-500' : 'text-foreground/10'} />
+                </div>
+
+                <div className="p-8 bg-foreground text-background rounded-[40px] flex justify-between items-center shadow-2xl">
+                    <div className="space-y-0.5 text-left">
+                      <span className="text-[8px] font-black opacity-40 uppercase tracking-[0.3em]">VALOR TOTAL</span>
+                      <span className="text-4xl font-black tracking-tighter">{formatCurrency(totalCalculated)}</span>
+                    </div>
+                    <div className="w-12 h-12 bg-background/10 rounded-full flex items-center justify-center">
+                      <CheckCircle size={24} />
+                    </div>
+                </div>
               </div>
             </div>
           )}
         </div>
       </main>
 
-      {/* FOOTER WIZARD - Safe Area Inferior (Barra de Gestos) */}
+      {/* FOOTER WIZARD */}
       <footer className="p-5 pb-[calc(env(safe-area-inset-bottom)+12px)] bg-background/90 backdrop-blur-3xl border-t border-border sticky bottom-0 z-10 flex justify-center">
         <div className="w-full max-w-sm">
           <IBButton 
             onClick={next} 
             className="w-full h-16 rounded-2xl text-[10px] shadow-2xl active:scale-95" 
-            disabled={step === 3 && !data.clientSignature}
           >
             <span className="flex items-center gap-2">
-              {step === 3 ? 'FINALIZAR OPERAÇÃO' : 'PRÓXIMO PASSO'}
-              {step < 3 && <ChevronRight size={16} />}
+              {step === 4 ? 'FINALIZAR OPERAÇÃO' : 'PRÓXIMO PASSO'}
+              {step < 4 && <ChevronRight size={16} />}
             </span>
           </IBButton>
         </div>

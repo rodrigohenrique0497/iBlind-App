@@ -78,7 +78,13 @@ export interface Attendance {
   clientPhone: string;
   deviceModel: string;
   deviceIMEI: string;
-  state: {
+  entryState: {
+    tela: { hasDamage: boolean; notes?: string };
+    traseira: { hasDamage: boolean; notes?: string };
+    cameras: { hasDamage: boolean; notes?: string };
+    botoes: { hasDamage: boolean; notes?: string };
+  };
+  exitState?: {
     tela: { hasDamage: boolean; notes?: string };
     traseira: { hasDamage: boolean; notes?: string };
     cameras: { hasDamage: boolean; notes?: string };
@@ -91,7 +97,7 @@ export interface Attendance {
   valueOthers?: number;
   paymentMethod: PaymentMethod;
   totalValue: number;
-  clientSignature: string;
   photos?: string[]; 
+  exitPhotos?: string[];
   isDeleted?: boolean;
 }
