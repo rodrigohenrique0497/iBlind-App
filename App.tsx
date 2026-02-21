@@ -61,7 +61,7 @@ const App = () => {
         setIsRecoveryMode(true);
       }
       
-      if (session?.user && !user) {
+      if (session?.user) {
         const fetchProfile = async () => {
           const { data: profile } = await supabase
             .from('profiles')
@@ -76,10 +76,17 @@ const App = () => {
             role: profile?.role || 'ADMIN',
             tenantId: profile?.tenant_id || session.user.id
           };
-          setUser(u);
-          authService.setSession(u);
+          
+          // Só atualiza se for diferente ou se o usuário atual não tiver tenantId
+          if (!user || user.id !== u.id || user.tenantId !== u.tenantId) {
+            setUser(u);
+            authService.setSession(u);
+          }
         };
         fetchProfile();
+      } else {
+        setUser(null);
+        authService.setSession(null);
       }
     });
 
@@ -93,6 +100,7 @@ const App = () => {
     }
 
     const fetchData = async () => {
+      if (!user?.tenantId) return;
       setIsLoading(true);
       try {
         const [attRes, invRes, logRes, usersRes] = await Promise.all([
@@ -122,12 +130,13 @@ const App = () => {
         }
         
         if (usersRes.data) {
-          setSpecialists(usersRes.data);
-        } else {
-          setSpecialists([
-            { id: '1', name: 'Carlos Técnico', email: 'carlos@iblind.com', role: 'ESPECIALISTA' },
-            { id: '2', name: 'Ana Blindagem', email: 'ana@iblind.com', role: 'ESPECIALISTA' }
-          ]);
+          setSpecialists(usersRes.data.map(u => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            tenantId: u.tenant_id
+          })));
         }
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
