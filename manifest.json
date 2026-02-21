@@ -10,13 +10,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/513/513754.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/8294/8294515.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/513/513754.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/8294/8294515.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

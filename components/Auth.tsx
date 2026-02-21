@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, ArrowRight, ArrowLeft, MailCheck } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft, MailCheck, Shield } from 'lucide-react';
 import { User } from '../types.ts';
 import { authService } from '../auth.ts';
 import { IBInput } from './iBlindUI.tsx';
 
 export const BrandLogo: React.FC<{ size?: string, inverted?: boolean }> = ({ size = "text-5xl", inverted = false }) => (
   <div className="flex flex-col items-center select-none group">
+    <div className="mb-4 p-4 bg-foreground/5 rounded-3xl border border-foreground/10 group-hover:bg-foreground group-hover:text-background transition-all duration-500">
+      <Shield size={48} strokeWidth={1.5} />
+    </div>
     <h1 className={`${size} brand-font-bold tracking-tighter transition-colors text-foreground`}>
       iBlind
     </h1>
