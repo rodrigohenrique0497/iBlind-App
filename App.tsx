@@ -182,7 +182,7 @@ const App = () => {
   };
 
   const handleDeleteSpecialist = async (id: string) => {
-    await supabase.from('profiles').delete().eq('id', id);
+    await supabase.from('profiles').delete().eq('id', id).eq('tenant_id', user!.tenantId);
     setSpecialists(specialists.filter(s => s.id !== id));
   };
 
@@ -253,7 +253,7 @@ const App = () => {
 
     const { error: attError } = await supabase.from('attendances').update({ 
       data: { ...history.find(a => a.id === id), isDeleted: true } 
-    }).eq('id', id);
+    }).eq('id', id).eq('tenant_id', user!.tenantId);
     if (attError) console.error('Erro ao atualizar atendimento:', attError);
 
     const log: AuditLog = {
